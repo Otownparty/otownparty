@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Otown Party – Let's Rave</title>
+  <meta name="description" content="Otown Party – Africa's premium rave movement. 10 Editions Strong. Next Edition: May 2026. Celebrating African urban culture through music, fashion, and community." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --accent: #f5a623;
+      --accent2: #e8728a;
+      --accent3: #7fb8e8;
+      --bg: #080808;
+      --card: #111111;
+      --border: #1e1e1e;
+      --text: #f0f0f0;
+      --muted: #888888;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, h5, .display { font-family: 'Syne', sans-serif; }
+
+    .page { display: none; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(8,8,8,0.92);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+
+    .nav-inner {
+      max-width: 1400px; margin: 0 auto;
+      padding: 0 2rem;
+      height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.75rem;
+      cursor: pointer; text-decoration: none;
+    }
+
+    .nav-logo img { height: 44px; width: auto; object-fit: contain; }
+
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+
+    .nav-links a {
+      color: var(--muted); font-size: 0.875rem; font-weight: 500;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      cursor: pointer; transition: color 0.2s; text-decoration: none;
+      background: none; border: none; font-family: inherit;
+    }
+
+    .nav-links a:hover, .nav-links a.active-link { color: var(--text); }
+
+    .btn-ticket {
+      background: var(--accent);
+      color: #000;
+      padding: 0.6rem 1.5rem;
+      border-radius: 2px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      font-family: 'Syne', sans-serif;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+
+    .btn-ticket:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px; cursor: pointer;
+      background: none; border: none; padding: 4px;
+    }
+
+    .hamburger span {
+      display: block; width: 24px; height: 2px;
+      background: var(--text); transition: 0.3s;
+    }
+
+    /* ── MOBILE MENU ── */
+    .mobile-menu {
+      display: none; position: fixed; inset: 0; z-index: 999;
+      background: rgba(8,8,8,0.98);
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 2rem;
+    }
+
+    .mobile-menu.open { display: flex; }
+
+    .mobile-menu a {
+      font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 700;
+      color: var(--text); text-decoration: none; cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .mobile-menu a:hover { color: var(--accent); }
+
+    .mobile-close {
+      position: absolute; top: 1.5rem; right: 2rem;
+      background: none; border: none; color: var(--text);
+      font-size: 2rem; cursor: pointer;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; height: 100vh; min-height: 700px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: url('https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1800&q=80') center/cover no-repeat;
+    }
+
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,8,8,0.55) 0%,
+        rgba(8,8,8,0.3) 40%,
+        rgba(8,8,8,0.75) 75%,
+        rgba(8,8,8,1) 100%
+      );
+    }
+
+    .hero-glow {
+      position: absolute; bottom: -100px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(245,166,35,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative; z-index: 2;
+      text-align: center; padding: 0 1.5rem;
+      max-width: 900px;
+    }
+
+    .hero-logo { height: 110px; width: auto; margin: 0 auto 2rem; display: block; filter: drop-shadow(0 0 40px rgba(245,166,35,0.3)); }
+
+    .hero-headline {
+      font-size: clamp(2.8rem, 6vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: #fff;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-headline span { color: var(--accent); }
+
+    .hero-sub {
+      font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+      color: rgba(240,240,240,0.7);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+      font-weight: 300;
+    }
+
+    /* ── COUNTDOWN ── */
+    .countdown {
+      display: flex; justify-content: center; gap: clamp(1rem, 3vw, 2.5rem);
+      margin-bottom: 2.5rem;
+    }
+
+    .cd-block {
+      display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+    }
+
+    .cd-num {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+      min-width: 2ch;
+      text-align: center;
+    }
+
+    .cd-label {
+      font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(240,240,240,0.45);
+    }
+
+    .cd-sep {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 300;
+      color: rgba(245,166,35,0.4);
+      align-self: flex-start;
+      padding-top: 0.1em;
+    }
+
+    .hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+
+    .btn-primary {
+      background: var(--accent); color: #000;
+      padding: 1rem 2.5rem; border-radius: 2px;
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; border: none;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9; transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(245,166,35,0.35);
+    }
+
+    .btn-outline {
+      background: transparent; color: var(--text);
+      padding: 1rem 2.5rem; border-radius: 2px;
+      border: 1px solid rgba(240,240,240,0.3);
+      font-family: 'Syne', sans-serif; font-weight: 600;
+      font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, transform 0.15s;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent); color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* ── SECTION BASE ── */
+    .section { padding: 6rem 2rem; max-width: 1400px; margin: 0 auto; }
+    .section-full { padding: 6rem 2rem; }
+
+    .section-label {
+      font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--accent); font-weight: 600; margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 800; line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+    }
+
+    .section-desc {
+      color: var(--muted); font-size: 1rem; max-width: 560px;
+      line-height: 1.75; font-weight: 300;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 100%; height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), transparent);
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .card:hover {
+      border-color: rgba(245,166,35,0.35);
+      transform: translateY(-4px);
+    }
+
+    /* ── TEASER GRID (Homepage) ── */
+    .teaser-grid {
+      display: grid; gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .teaser-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px; padding: 2rem;
+      transition: border-color 0.3s, transform 0.3s;
+      cursor: pointer;
+    }
+
+    .teaser-card:hover {
+      border-color: rgba(245,166,35,0.4);
+      transform: translateY(-4px);
+    }
+
+    .teaser-icon {
+      width: 44px; height: 44px; border-radius: 2px;
+      background: rgba(245,166,35,0.12);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── SPOTLIGHT CARD (Events) ── */
+    .spotlight {
+      background: linear-gradient(135deg, #141414, #181818);
+      border: 1px solid rgba(245,166,35,0.3);
+      border-radius: 4px; overflow: hidden;
+      position: relative;
+    }
+
+    .spotlight::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: linear-gradient(to bottom, var(--accent), var(--accent2));
+    }
+
+    /* ── EVENTS GRID ── */
+    .events-grid {
+      display: grid; gap: 1.25rem;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+
+    .event-card-img {
+      width: 100%; height: 180px; object-fit: cover; display: block;
+      filter: brightness(0.85);
+      transition: filter 0.3s, transform 0.4s;
+    }
+
+    .card:hover .event-card-img { filter: brightness(1); transform: scale(1.03); }
+
+    .event-card-body { padding: 1.5rem; }
+
+    .edition-badge {
+      display: inline-block;
+      background: rgba(245,166,35,0.15);
+      color: var(--accent);
+      font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+      padding: 0.3rem 0.75rem; border-radius: 2px;
+      font-weight: 700; margin-bottom: 0.75rem;
+    }
+
+    /* ── ABOUT ── */
+    .values-grid {
+      display: grid; gap: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+
+    .value-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 4px; padding: 2rem;
+      transition: border-color 0.3s;
+    }
+
+    .value-item:hover { border-color: rgba(245,166,35,0.3); }
+
+    .value-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 3rem; font-weight: 800;
+      color: rgba(245,166,35,0.15);
+      line-height: 1; margin-bottom: 0.75rem;
+    }
+
+    /* ── GALLERY ── */
+    .gallery-filter {
+      display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 2.5rem;
+    }
+
+    .filter-btn {
+      padding: 0.5rem 1.25rem; border-radius: 2px;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.75rem; letter-spacing: 0.15em;
+      text-transform: uppercase; cursor: pointer; font-family: inherit;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); }
+
+    .masonry {
+      columns: 4; column-gap: 1rem;
+    }
+
+    @media (max-width: 1100px) { .masonry { columns: 3; } }
+    @media (max-width: 700px)  { .masonry { columns: 2; } }
+    @media (max-width: 420px)  { .masonry { columns: 1; } }
+
+    .masonry-item {
+      break-inside: avoid; margin-bottom: 1rem;
+      position: relative; overflow: hidden;
+      border-radius: 4px; cursor: pointer;
+    }
+
+    .masonry-item img {
+      width: 100%; display: block;
+      transition: transform 0.5s, filter 0.3s;
+      filter: brightness(0.8);
+    }
+
+    .masonry-item:hover img { transform: scale(1.05); filter: brightness(1); }
+
+    .masonry-overlay {
+      position: absolute; inset: 0;
+      background: rgba(245,166,35,0);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.3s;
+    }
+
+    .masonry-item:hover .masonry-overlay { background: rgba(245,166,35,0.08); }
+
+    .masonry-overlay svg { opacity: 0; transform: scale(0.7); transition: 0.3s; }
+    .masonry-item:hover .masonry-overlay svg { opacity: 1; transform: scale(1); }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.95);
+      align-items: center; justify-content: center;
+    }
+
+    .lightbox.open { display: flex; }
+
+    .lightbox img {
+      max-width: 90vw; max-height: 90vh;
+      object-fit: contain; border-radius: 4px;
+    }
+
+    .lightbox-close {
+      position: absolute; top: 1.5rem; right: 2rem;
+      background: none; border: none; color: #fff;
+      font-size: 2rem; cursor: pointer;
+    }
+
+    .lightbox-prev, .lightbox-next {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; font-size: 1.5rem; cursor: pointer;
+      padding: 1rem; border-radius: 2px;
+    }
+
+    .lightbox-prev { left: 1rem; }
+    .lightbox-next { right: 1rem; }
+
+    /* ── TICKETS ── */
+    .ticket-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 4px; padding: 2.5rem;
+      transition: border-color 0.3s;
+    }
+
+    .ticket-card:hover { border-color: rgba(245,166,35,0.3); }
+
+    .ticket-card.featured {
+      border-color: rgba(245,166,35,0.4);
+      background: linear-gradient(135deg, #131313, #161616);
+    }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 1.5rem; }
+
+    .form-label {
+      display: block; font-size: 0.7rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 0.6rem; font-weight: 600;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%; background: #101010;
+      border: 1px solid var(--border); border-radius: 2px;
+      color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem; padding: 0.875rem 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      border-color: rgba(245,166,35,0.5);
+      box-shadow: 0 0 0 3px rgba(245,166,35,0.07);
+    }
+
+    .form-textarea { resize: vertical; min-height: 130px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #060606; border-top: 1px solid var(--border);
+      padding: 4rem 2rem 2rem;
+    }
+
+    .footer-inner { max-width: 1400px; margin: 0 auto; }
+
+    .footer-grid {
+      display: grid; gap: 3rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      margin-bottom: 3rem;
+    }
+
+    .footer-heading {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.7rem; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 1.25rem;
+    }
+
+    .footer-links { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .footer-links a {
+      color: var(--muted); font-size: 0.9rem; text-decoration: none;
+      cursor: pointer; transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+
+    .social-row { display: flex; gap: 1rem; }
+
+    .social-btn {
+      width: 40px; height: 40px; border-radius: 2px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      background: none;
+    }
+
+    .social-btn:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: rgba(245,166,35,0.07);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up { opacity: 0; }
+    .fade-up.visible { animation: fadeUp 0.7s ease forwards; }
+
+    @keyframes pulseGlow {
+      0%,100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .pulse-glow { animation: pulseGlow 3s ease-in-out infinite; }
+
+    /* ── RESPONSIVE NAV ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+    }
+
+    /* ── STAT ROW ── */
+    .stat-row {
+      display: flex; gap: 3rem; flex-wrap: wrap;
+      margin-top: 3rem;
+    }
+
+    .stat-item { }
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 3rem; font-weight: 800;
+      color: var(--accent); line-height: 1;
+    }
+
+    .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* page sub-hero */
+    .page-hero {
+      padding-top: 130px; padding-bottom: 4rem;
+      background: linear-gradient(to bottom, #0e0e0e, var(--bg));
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* img overflow hidden parent */
+    .img-wrap { overflow: hidden; }
+
+    /* ticket tier */
+    .tier-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tier-row:last-child { border-bottom: none; }
+  </style>
+</head>
+
+<body>
+
+<!-- ═══════════════════════════════ NAVBAR ═══════════════════════════════ -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" onclick="showPage('home')">
+      <img src="logo.jpg" alt="Otown Party Logo" id="nav-logo-img" />
+    </a>
+    <div class="nav-links">
+      <a onclick="showPage('home')" data-page="home">Home</a>
+      <a onclick="showPage('events')" data-page="events">Events</a>
+      <a onclick="showPage('about')" data-page="about">About</a>
+      <a onclick="showPage('gallery')" data-page="gallery">Gallery</a>
+      <a onclick="showPage('tickets')" data-page="tickets">Tickets</a>
+      <button class="btn-ticket" onclick="showPage('tickets')">Get Tickets</button>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">✕</button>
+  <a onclick="showPage('home');closeMobile()">Home</a>
+  <a onclick="showPage('events');closeMobile()">Events</a>
+  <a onclick="showPage('about');closeMobile()">About</a>
+  <a onclick="showPage('gallery');closeMobile()">Gallery</a>
+  <a onclick="showPage('tickets');closeMobile()">Tickets</a>
+  <button class="btn-primary" style="font-size:1rem;padding:1rem 3rem;" onclick="showPage('tickets');closeMobile()">Get Tickets</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE: HOME
+════════════════════════════════════════════════════════════════════════ -->
+<div id="page-home" class="page active">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-glow pulse-glow"></div>
+    <div class="hero-content">
+      <img src="logo.jpg" alt="Otown Party" class="hero-logo" />
+      <h1 class="hero-headline">Otown Party –<br /><span>Let's Rave</span></h1>
+      <p class="hero-sub">10 Editions Strong &nbsp;|&nbsp; Celebrating African Urban Culture &nbsp;|&nbsp; Next Edition: May 2026</p>
+
+      <!-- COUNTDOWN -->
+      <div class="countdown">
+        <div class="cd-block">
+          <span class="cd-num" id="cd-days">000</span>
+          <span class="cd-label">Days</span>
+        </div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block">
+          <span class="cd-num" id="cd-hours">00</span>
+          <span class="cd-label">Hours</span>
+        </div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block">
+          <span class="cd-num" id="cd-mins">00</span>
+          <span class="cd-label">Minutes</span>
+        </div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block">
+          <span class="cd-num" id="cd-secs">00</span>
+          <span class="cd-label">Seconds</span>
+        </div>
+      </div>
+
+      <div class="hero-ctas">
+        <button class="btn-primary" onclick="showPage('tickets')">Get Tickets Now</button>
+        <button class="btn-outline" onclick="showPage('events')">Explore Events</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEASER SECTIONS -->
+  <div style="background: var(--bg);">
+    <div class="section">
+
+      <!-- label -->
+      <p class="section-label fade-up">The Movement</p>
+      <h2 class="section-title fade-up" style="animation-delay:0.1s">Africa's Premier<br/>Rave Experience</h2>
+      <p class="section-desc fade-up" style="animation-delay:0.2s">
+        Born from the pulse of African urban culture, Otown Party has grown from a vision into a movement — 10 iconic editions that unite communities through music, fashion, and pure energy.
+      </p>
+
+      <div class="teaser-grid" style="margin-top:3rem;">
+        <!-- Events -->
+        <div class="teaser-card fade-up" onclick="showPage('events')">
+          <div class="teaser-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div class="edition-badge">Edition 11 – May 2026</div>
+          <h3 style="font-size:1.4rem;font-weight:700;margin-bottom:0.75rem;">Next Edition<br/>Coming Soon</h3>
+          <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:1.25rem;">The 11th chapter of Otown Party is shaping up to be our most spectacular yet. Secure your spot now.</p>
+          <span style="color:var(--accent);font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">View All Editions →</span>
+        </div>
+
+        <!-- About -->
+        <div class="teaser-card fade-up" style="animation-delay:0.1s" onclick="showPage('about')">
+          <div class="teaser-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="edition-badge">Est. — The Beginning</div>
+          <h3 style="font-size:1.4rem;font-weight:700;margin-bottom:0.75rem;">The Story<br/>Behind Otown</h3>
+          <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:1.25rem;">From a bold idea to 10 legendary editions — discover the story, mission, and values of a cultural movement that's changing the scene.</p>
+          <span style="color:var(--accent);font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">Read Our Story →</span>
+        </div>
+
+        <!-- Gallery -->
+        <div class="teaser-card fade-up" style="animation-delay:0.2s" onclick="showPage('gallery')">
+          <div class="teaser-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </div>
+          <div class="edition-badge">10 Editions of Moments</div>
+          <h3 style="font-size:1.4rem;font-weight:700;margin-bottom:0.75rem;">Captured<br/>Memories</h3>
+          <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:1.25rem;">Relive the energy, fashion, and community of every Otown Party edition through our curated photo gallery.</p>
+          <span style="color:var(--accent);font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">View Gallery →</span>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-row fade-up" style="animation-delay:0.3s">
+        <div class="stat-item">
+          <div class="stat-num">10</div>
+          <div class="stat-label">Editions Hosted</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">5K+</div>
+          <div class="stat-label">Ravers per Edition</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">50+</div>
+          <div class="stat-label">Artists Featured</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">1</div>
+          <div class="stat-label">Movement</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Featured gallery strip -->
+    <div style="padding: 0 2rem 6rem; max-width:1400px; margin:0 auto;">
+      <div class="divider" style="margin-bottom:4rem;"></div>
+      <p class="section-label fade-up">Gallery Preview</p>
+      <h2 class="section-title fade-up" style="margin-bottom:2rem;">Moments from<br/>the Movement</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.75rem;">
+        <div class="img-wrap" style="border-radius:4px;cursor:pointer;" onclick="showPage('gallery')">
+          <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80" alt="Otown Party crowd" style="width:100%;height:220px;object-fit:cover;display:block;transition:transform 0.4s,filter 0.3s;filter:brightness(0.75);" onmouseover="this.style.transform='scale(1.05)';this.style.filter='brightness(0.95)';" onmouseout="this.style.transform='scale(1)';this.style.filter='brightness(0.75)';" />
+        </div>
+        <div class="img-wrap" style="border-radius:4px;cursor:pointer;" onclick="showPage('gallery')">
+          <img src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&q=80" alt="Otown Party stage" style="width:100%;height:220px;object-fit:cover;display:block;transition:transform 0.4s,filter 0.3s;filter:brightness(0.75);" onmouseover="this.style.transform='scale(1.05)';this.style.filter='brightness(0.95)';" onmouseout="this.style.transform='scale(1)';this.style.filter='brightness(0.75)';" />
+        </div>
+        <div class="img-wrap" style="border-radius:4px;cursor:pointer;" onclick="showPage('gallery')">
+          <img src="https://images.unsplash.com/photo-1571266028243-d220c6a5bf4b?w=600&q=80" alt="Otown Party DJ" style="width:100%;height:220px;object-fit:cover;display:block;transition:transform 0.4s,filter 0.3s;filter:brightness(0.75);" onmouseover="this.style.transform='scale(1.05)';this.style.filter='brightness(0.95)';" onmouseout="this.style.transform='scale(1)';this.style.filter='brightness(0.75)';" />
+        </div>
+        <div class="img-wrap" style="border-radius:4px;cursor:pointer;" onclick="showPage('gallery')">
+          <img src="https://images.unsplash.com/photo-1563841930606-67e2bce48b78?w=600&q=80" alt="Otown Party lights" style="width:100%;height:220px;object-fit:cover;display:block;transition:transform 0.4s,filter 0.3s;filter:brightness(0.75);" onmouseover="this.style.transform='scale(1.05)';this.style.filter='brightness(0.95)';" onmouseout="this.style.transform='scale(1)';this.style.filter='brightness(0.75)';" />
+        </div>
+      </div>
+      <div style="margin-top:1.5rem;text-align:center;">
+        <button class="btn-outline" onclick="showPage('gallery')" style="font-size:0.8rem;padding:0.75rem 2rem;">View Full Gallery</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="footer-home"></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE: EVENTS
+════════════════════════════════════════════════════════════════════════ -->
+<div id="page-events" class="page">
+  <div class="page-hero">
+    <p class="section-label">The Editions</p>
+    <h1 class="section-title" style="margin-bottom:0.5rem;">Our Editions<br/><span class="gradient-text">&amp; Lineup</span></h1>
+    <p style="color:var(--muted);max-width:480px;margin:0 auto;font-size:0.95rem;line-height:1.75;">Ten iconic chapters. One unstoppable movement. Explore every edition of Otown Party.</p>
+  </div>
+
+  <div class="section">
+
+    <!-- Spotlight: Edition 11 -->
+    <p class="section-label fade-up">Coming Next</p>
+    <div class="spotlight fade-up" style="animation-delay:0.1s;padding:2.5rem 3rem;display:flex;flex-wrap:wrap;gap:2rem;align-items:center;margin-bottom:4rem;">
+      <div style="flex:1;min-width:260px;">
+        <div class="edition-badge" style="background:rgba(245,166,35,0.2);margin-bottom:1rem;">11th Edition</div>
+        <h2 style="font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:800;margin-bottom:0.75rem;line-height:1.1;">Otown Party XI<br/><span class="gradient-text">May 2026</span></h2>
+        <p style="color:var(--muted);font-size:0.95rem;line-height:1.75;margin-bottom:1.5rem;">
+          The 11th edition of Africa's most electric rave movement is set to be our most monumental yet. Bigger stage, bigger lineup, bigger energy. Stay tuned for the full announcement.
+        </p>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1.5rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;color:var(--muted);font-size:0.85rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            May 2026
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;color:var(--muted);font-size:0.85rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Location TBA
+          </div>
+          <div style="background:rgba(245,166,35,0.12);color:var(--accent);padding:0.25rem 0.75rem;border-radius:2px;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;font-weight:700;">Theme: TBA</div>
+        </div>
+        <button class="btn-primary" onclick="showPage('tickets')" style="font-size:0.85rem;">Get Tickets Now</button>
+      </div>
+      <div style="flex:1;min-width:260px;max-width:440px;">
+        <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80" alt="Otown Party Edition 11" style="width:100%;border-radius:4px;filter:brightness(0.7);display:block;" />
+      </div>
+    </div>
+
+    <!-- Past Editions Grid -->
+    <div class="divider" style="margin-bottom:3rem;"></div>
+    <p class="section-label fade-up">The Legacy</p>
+    <h2 class="section-title fade-up" style="margin-bottom:2rem;">10 Legendary<br/>Editions</h2>
+
+    <div class="events-grid">
+      <!-- Editions 1-10 -->
+      <script>
+        const pastEditions = [
+          { num:1, year:'2015', title:'The Genesis', desc:'Where it all began — a bold experiment that launched a movement.', img:'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=500&q=70' },
+          { num:2, year:'2016', title:'Rising Energy', desc:'Bigger stages, bigger hearts, the crowd doubled and so did the heat.', img:'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=500&q=70' },
+          { num:3, year:'2017', title:'The Culture Drop', desc:'Fashion met music in this defining edition of African urban expression.', img:'https://images.unsplash.com/photo-1571266028243-d220c6a5bf4b?w=500&q=70' },
+          { num:4, year:'2017', title:'Midnight Fire', desc:'An all-night celebration that burned brighter than ever before.', img:'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=500&q=70' },
+          { num:5, year:'2018', title:'Continental Sound', desc:'Africa spoke, the world listened — our most diverse lineup yet.', img:'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&q=70' },
+          { num:6, year:'2019', title:'The Revolution', desc:'Breaking boundaries with sounds and styles that pushed every limit.', img:'https://images.unsplash.com/photo-1563841930606-67e2bce48b78?w=500&q=70' },
+          { num:7, year:'2020', title:'Resilience', desc:'Against all odds, we came together to celebrate and survive.', img:'https://images.unsplash.com/photo-1574391884720-bbc3740c59d1?w=500&q=70' },
+          { num:8, year:'2021', title:'Rebirth', desc:'The world opened back up, and Otown Party led the way.', img:'https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=500&q=70' },
+          { num:9, year:'2022', title:'Golden Era', desc:'Our most photographed, most talked-about edition to date.', img:'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=70' },
+          { num:10, year:'2024', title:'A Decade of Raving', desc:'10 editions. One unstoppable movement. The celebration of a milestone.', img:'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=500&q=70' },
+        ];
+
+        document.write(pastEditions.map(e => `
+          <div class="card fade-up">
+            <div class="img-wrap"><img class="event-card-img" src="${e.img}" alt="Otown Party Edition ${e.num}" loading="lazy" /></div>
+            <div class="event-card-body">
+              <div class="edition-badge">Edition ${e.num} · ${e.year}</div>
+              <h3 style="font-size:1.15rem;font-weight:700;margin-bottom:0.5rem;">${e.title}</h3>
+              <p style="color:var(--muted);font-size:0.85rem;line-height:1.65;margin-bottom:1rem;">${e.desc}</p>
+              <a onclick="showPage('gallery')" style="color:var(--accent);font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;cursor:pointer;">View Moments →</a>
+            </div>
+          </div>
+        `).join(''));
+      </script>
+    </div>
+  </div>
+
+  <div id="footer-events"></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE: ABOUT
+════════════════════════════════════════════════════════════════════════ -->
+<div id="page-about" class="page">
+  <div class="page-hero">
+    <p class="section-label">Our Story</p>
+    <h1 class="section-title" style="margin-bottom:0.5rem;">About<br/><span class="gradient-text">Otown Party</span></h1>
+    <p style="color:var(--muted);max-width:480px;margin:0 auto;font-size:0.95rem;line-height:1.75;">A movement born from culture, community, and the relentless desire to celebrate African urban life.</p>
+  </div>
+
+  <div class="section" style="max-width:900px;">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;margin-bottom:5rem;" class="fade-up">
+      <div>
+        <p class="section-label">Origin Story</p>
+        <h2 class="section-title" style="font-size:clamp(1.8rem,3vw,2.5rem);margin-bottom:1.5rem;">Where It All<br/>Began</h2>
+        <p style="color:var(--muted);line-height:1.85;margin-bottom:1.25rem;font-size:0.95rem;">
+          Otown Party was born from a simple but powerful desire: to create a space where African urban culture could breathe freely — where music, fashion, and community converge without compromise.
+        </p>
+        <p style="color:var(--muted);line-height:1.85;font-size:0.95rem;">
+          What started as an intimate gathering among friends and culture enthusiasts quickly grew into one of the most anticipated events on the African rave calendar. Edition after edition, Otown Party has expanded its reach, its stages, and its community.
+        </p>
+      </div>
+      <div>
+        <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=700&q=80" alt="Otown Party community" style="width:100%;border-radius:4px;filter:brightness(0.75);" />
+      </div>
+    </div>
+
+    <div class="divider" style="margin-bottom:4rem;"></div>
+
+    <p class="section-label fade-up">The Mission</p>
+    <h2 class="section-title fade-up" style="font-size:clamp(1.8rem,3vw,2.4rem);max-width:600px;margin-bottom:1.5rem;">More Than a Party —<br/>A Cultural Statement</h2>
+    <p style="color:var(--muted);line-height:1.85;max-width:700px;margin-bottom:1.25rem;font-size:0.95rem;" class="fade-up">
+      Otown Party exists to celebrate, amplify, and preserve the richness of African urban culture. We believe that music is the universal language of community, and that when people gather with intention, transformation happens.
+    </p>
+    <p style="color:var(--muted);line-height:1.85;max-width:700px;font-size:0.95rem;" class="fade-up">
+      Through every edition, we curate experiences that honour African artistry — from the DJs who command our stages to the fashion houses that define our dress codes, to the visual artists and photographers who capture our moments for posterity.
+    </p>
+
+    <!-- Milestone -->
+    <div style="margin: 4rem 0; background: linear-gradient(135deg, #111, #141414); border: 1px solid rgba(245,166,35,0.3); border-radius: 4px; padding: 2.5rem; position: relative; overflow: hidden;" class="fade-up">
+      <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(to bottom, var(--accent), var(--accent2));"></div>
+      <div style="padding-left:1rem;">
+        <p class="section-label" style="margin-bottom:0.5rem;">A Milestone</p>
+        <h3 style="font-size:clamp(1.5rem,2.5vw,2rem);font-weight:800;margin-bottom:0.75rem;">10 Successful Editions<br/>and Growing</h3>
+        <p style="color:var(--muted);font-size:0.95rem;line-height:1.75;max-width:560px;">
+          Reaching 10 editions is not just a number — it is proof that African urban culture is a force that unites, inspires, and endures. We are only getting started.
+        </p>
+      </div>
+    </div>
+
+    <div class="divider" style="margin-bottom:4rem;"></div>
+
+    <!-- Values -->
+    <p class="section-label fade-up">What We Stand For</p>
+    <h2 class="section-title fade-up" style="font-size:clamp(1.8rem,3vw,2.4rem);margin-bottom:2rem;">Our Values</h2>
+
+    <div class="values-grid">
+      <div class="value-item fade-up">
+        <div class="value-num">01</div>
+        <h4 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Culture First</h4>
+        <p style="color:var(--muted);font-size:0.875rem;line-height:1.7;">Every decision we make honours African culture — in sound, style, and space.</p>
+      </div>
+      <div class="value-item fade-up" style="animation-delay:0.1s">
+        <div class="value-num">02</div>
+        <h4 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Community</h4>
+        <p style="color:var(--muted);font-size:0.875rem;line-height:1.7;">We build belonging — creating environments where every raver feels seen and celebrated.</p>
+      </div>
+      <div class="value-item fade-up" style="animation-delay:0.2s">
+        <div class="value-num">03</div>
+        <h4 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Excellence</h4>
+        <p style="color:var(--muted);font-size:0.875rem;line-height:1.7;">Premium production, world-class curation, and relentless attention to the detail that matters.</p>
+      </div>
+      <div class="value-item fade-up" style="animation-delay:0.3s">
+        <div class="value-num">04</div>
+        <h4 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Expression</h4>
+        <p style="color:var(--muted);font-size:0.875rem;line-height:1.7;">Fashion, art, music — Otown Party is a canvas for unfiltered African self-expression.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-about"></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE: GALLERY
+════════════════════════════════════════════════════════════════════════ -->
+<div id="page-gallery" class="page">
+  <div class="page-hero">
+    <p class="section-label">Visual Archive</p>
+    <h1 class="section-title" style="margin-bottom:0.5rem;">Moments from<br/><span class="gradient-text">the Movement</span></h1>
+    <p style="color:var(--muted);max-width:480px;margin:0 auto;font-size:0.95rem;line-height:1.75;">A decade of energy, colour, and community — captured one frame at a time.</p>
+  </div>
+
+  <div class="section-full" style="padding-top:3rem;">
+    <div style="max-width:1400px;margin:0 auto;padding:0 2rem;">
+
+      <!-- Filters -->
+      <div class="gallery-filter fade-up">
+        <button class="filter-btn active" data-filter="all" onclick="filterGallery('all', this)">All Editions</button>
+        <button class="filter-btn" data-filter="early" onclick="filterGallery('early', this)">Early Years (2015–2017)</button>
+        <button class="filter-btn" data-filter="mid" onclick="filterGallery('mid', this)">The Rise (2018–2020)</button>
+        <button class="filter-btn" data-filter="recent" onclick="filterGallery('recent', this)">Recent (2021–2024)</button>
+      </div>
+
+      <!-- Masonry -->
+      <div class="masonry" id="gallery-grid">
+        <!-- Generated by JS below -->
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-gallery"></div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-prev" onclick="lightboxNav(-1)">‹</button>
+  <img id="lightbox-img" src="" alt="Gallery" />
+  <button class="lightbox-next" onclick="lightboxNav(1)">›</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE: TICKETS
+════════════════════════════════════════════════════════════════════════ -->
+<div id="page-tickets" class="page">
+  <div class="page-hero">
+    <p class="section-label">Edition 11 – May 2026</p>
+    <h1 class="section-title" style="margin-bottom:0.5rem;">Join the Movement –<br/><span class="gradient-text">Get Your Tickets</span></h1>
+    <p style="color:var(--muted);max-width:480px;margin:0 auto;font-size:0.95rem;line-height:1.75;">Secure your place at the most anticipated rave event of 2026. Tickets are limited — move early.</p>
+  </div>
+
+  <div class="section">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;">
+
+      <!-- Ticket Tiers -->
+      <div class="fade-up">
+        <p class="section-label">Ticket Tiers</p>
+        <h2 class="section-title" style="font-size:clamp(1.5rem,2.5vw,2rem);margin-bottom:2rem;">Otown Party XI<br/>May 2026</h2>
+
+        <div class="ticket-card featured" style="margin-bottom:1.25rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <div>
+              <div class="edition-badge" style="margin-bottom:0.5rem;">Best Value</div>
+              <h3 style="font-size:1.4rem;font-weight:800;">Early Bird</h3>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--accent);">TBA</div>
+              <div style="font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;">Limited Spots</div>
+            </div>
+          </div>
+          <div class="tier-row">
+            <span style="color:var(--muted);font-size:0.875rem;">Full event access</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="tier-row">
+            <span style="color:var(--muted);font-size:0.875rem;">Welcome drink included</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="tier-row">
+            <span style="color:var(--muted);font-size:0.875rem;">Digital memento</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <button class="btn-primary" style="width:100%;margin-top:1.5rem;font-size:0.85rem;padding:0.875rem;">Get Early Bird Ticket</button>
+        </div>
+
+        <div class="ticket-card" style="margin-bottom:1.25rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <div>
+              <div class="edition-badge" style="margin-bottom:0.5rem;">General</div>
+              <h3 style="font-size:1.4rem;font-weight:800;">Standard Access</h3>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--text);">TBA</div>
+            </div>
+          </div>
+          <div class="tier-row"><span style="color:var(--muted);font-size:0.875rem;">Full event access</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="tier-row"><span style="color:var(--muted);font-size:0.875rem;">All stages & areas</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <button class="btn-outline" style="width:100%;margin-top:1.5rem;font-size:0.85rem;padding:0.875rem;">Get Standard Ticket</button>
+        </div>
+
+        <div class="ticket-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <div>
+              <div class="edition-badge" style="background:rgba(232,114,138,0.15);color:var(--accent2);margin-bottom:0.5rem;">Premium</div>
+              <h3 style="font-size:1.4rem;font-weight:800;">VIP Experience</h3>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--accent2);">TBA</div>
+            </div>
+          </div>
+          <div class="tier-row"><span style="color:var(--muted);font-size:0.875rem;">VIP lounge access</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="tier-row"><span style="color:var(--muted);font-size:0.875rem;">Premium bar access</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="tier-row"><span style="color:var(--muted);font-size:0.875rem;">Exclusive Otown merch</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="tier-row"><span style="color:var(--muted);font-size:0.875rem;">Priority entry</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <button class="btn-outline" style="width:100%;margin-top:1.5rem;font-size:0.85rem;padding:0.875rem;border-color:rgba(232,114,138,0.4);color:var(--accent2);" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='rgba(232,114,138,0.4)'">Get VIP Ticket</button>
+        </div>
+      </div>
+
+      <!-- Contact Form -->
+      <div class="fade-up" style="animation-delay:0.15s;">
+        <p class="section-label">Reach Out</p>
+        <h2 class="section-title" style="font-size:clamp(1.5rem,2.5vw,2rem);margin-bottom:2rem;">Get in Touch</h2>
+
+        <div class="ticket-card" style="margin-bottom:2.5rem;">
+          <form onsubmit="handleForm(event)">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" class="form-input" placeholder="Your full name" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" placeholder="your@email.com" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Message</label>
+              <textarea class="form-textarea" placeholder="Tell us about your inquiry — partnerships, press, group tickets..."></textarea>
+            </div>
+            <button type="submit" class="btn-primary" style="width:100%;padding:0.9rem;font-size:0.85rem;">Send Message</button>
+          </form>
+          <div id="form-success" style="display:none;text-align:center;padding:1.5rem 0;">
+            <div style="width:50px;height:50px;border-radius:50%;background:rgba(245,166,35,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <h4 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Message Sent!</h4>
+            <p style="color:var(--muted);font-size:0.875rem;">We'll get back to you within 24 hours.</p>
+          </div>
+        </div>
+
+        <!-- Contact Details -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:4px;padding:2rem;">
+          <p class="section-label" style="margin-bottom:1.25rem;">Connect With Us</p>
+          <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.75rem;">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <div style="width:36px;height:36px;border-radius:2px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <span style="color:var(--muted);font-size:0.875rem;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7018151c1c1f301f041f071e00110204095e131f1d">[email&#160;protected]</a></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <div style="width:36px;height:36px;border-radius:2px;background:rgba(245,166,35,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </div>
+              <span style="color:var(--muted);font-size:0.875rem;">Africa – Location Announced Per Edition</span>
+            </div>
+          </div>
+
+          <p class="footer-heading" style="margin-bottom:1rem;">Follow the Movement</p>
+          <div class="social-row">
+            <button class="social-btn" title="Instagram">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            </button>
+            <button class="social-btn" title="Twitter/X">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </button>
+            <button class="social-btn" title="TikTok">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.14a8.16 8.16 0 004.77 1.52V7.2a4.85 4.85 0 01-1-.51z"/></svg>
+            </button>
+            <button class="social-btn" title="YouTube">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-tickets"></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     FOOTER TEMPLATE
+════════════════════════════════════════════════════════════════════════ -->
+<template id="footer-tpl">
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div>
+          <img src="logo.jpg" alt="Otown Party" style="height:52px;margin-bottom:1rem;" />
+          <p style="color:var(--muted);font-size:0.875rem;line-height:1.75;max-width:240px;margin-bottom:1.25rem;">Africa's premium rave movement. Where culture meets the dancefloor.</p>
+          <div class="social-row">
+            <button class="social-btn" title="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            </button>
+            <button class="social-btn" title="Twitter/X">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </button>
+            <button class="social-btn" title="TikTok">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.14a8.16 8.16 0 004.77 1.52V7.2a4.85 4.85 0 01-1-.51z"/></svg>
+            </button>
+            <button class="social-btn" title="YouTube">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <p class="footer-heading">Navigate</p>
+          <div class="footer-links">
+            <a onclick="showPage('home')">Home</a>
+            <a onclick="showPage('events')">Events &amp; Editions</a>
+            <a onclick="showPage('about')">About the Movement</a>
+            <a onclick="showPage('gallery')">Gallery</a>
+            <a onclick="showPage('tickets')">Tickets</a>
+          </div>
+        </div>
+
+        <div>
+          <p class="footer-heading">Editions</p>
+          <div class="footer-links">
+            <a onclick="showPage('events')">Edition 11 – May 2026</a>
+            <a onclick="showPage('events')">Edition 10 – 2024</a>
+            <a onclick="showPage('events')">Edition 9 – 2022</a>
+            <a onclick="showPage('events')">Edition 8 – 2021</a>
+            <a onclick="showPage('events')">View All →</a>
+          </div>
+        </div>
+
+        <div>
+          <p class="footer-heading">Contact</p>
+          <div class="footer-links">
+            <a><span class="__cf_email__" data-cfemail="0e666b6262614e617a6179607e6f7c7a77206d6163">[email&#160;protected]</span></a>
+            <a onclick="showPage('tickets')">Ticket Enquiries</a>
+            <a onclick="showPage('tickets')">Press &amp; Media</a>
+            <a onclick="showPage('tickets')">Partnership</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider" style="margin-bottom:2rem;"></div>
+
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1rem;">
+        <p style="color:var(--muted);font-size:0.8rem;">© 2026 Otown Party. All rights reserved.</p>
+        <p style="color:rgba(245,166,35,0.7);font-size:0.75rem;letter-spacing:0.15em;text-transform:uppercase;font-weight:600;">Proudly Celebrating African Urban Culture</p>
+      </div>
+    </div>
+  </footer>
+</template>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════════════════ -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // ─── FOOTER INJECTION ───
+  function injectFooters() {
+    const tpl = document.getElementById('footer-tpl');
+    ['home','events','about','gallery','tickets'].forEach(id => {
+      const slot = document.getElementById(`footer-${id}`);
+      if (slot) slot.replaceWith(tpl.content.cloneNode(true));
+    });
+  }
+  injectFooters();
+
+  // ─── PAGE ROUTING ───
+  let currentPage = 'home';
+
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.querySelectorAll('[data-page]').forEach(a => {
+      a.classList.toggle('active-link', a.dataset.page === name);
+    });
+    currentPage = name;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Retrigger animations
+    setTimeout(() => observeAnimations(), 100);
+  }
+
+  // ─── HAMBURGER MENU ───
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('mobileMenu').classList.add('open');
+  });
+  document.getElementById('mobileClose').addEventListener('click', () => {
+    document.getElementById('mobileMenu').classList.remove('open');
+  });
+  function closeMobile() { document.getElementById('mobileMenu').classList.remove('open'); }
+
+  // ─── COUNTDOWN ───
+  const targetDate = new Date('2026-05-15T22:00:00');
+
+  function updateCountdown() {
+    const now = new Date();
+    const diff = targetDate - now;
+    if (diff <= 0) {
+      ['days','hours','mins','secs'].forEach(u => document.getElementById('cd-' + u).textContent = '00');
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cd-days').textContent  = String(d).padStart(3,'0');
+    document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-mins').textContent  = String(m).padStart(2,'0');
+    document.getElementById('cd-secs').textContent  = String(s).padStart(2,'0');
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  // ─── SCROLL ANIMATIONS ───
+  function observeAnimations() {
+    const els = document.querySelectorAll('.fade-up:not(.visible)');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(el => obs.observe(el));
+  }
+  observeAnimations();
+
+  // ─── GALLERY ───
+  const galleryImages = [
+    { src:'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80', era:'early', alt:'Otown Party crowd energy' },
+    { src:'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80', era:'early', alt:'Otown Party stage lights' },
+    { src:'https://images.unsplash.com/photo-1571266028243-d220c6a5bf4b?w=800&q=80', era:'early', alt:'Otown Party DJ set' },
+    { src:'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800&q=80', era:'mid', alt:'Otown Party festival' },
+    { src:'https://images.unsplash.com/photo-1563841930606-67e2bce48b78?w=800&q=80', era:'mid', alt:'Otown Party nighttime' },
+    { src:'https://images.unsplash.com/photo-1574391884720-bbc3740c59d1?w=800&q=80', era:'mid', alt:'Otown Party movement' },
+    { src:'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80', era:'recent', alt:'Otown Party rave' },
+    { src:'https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=800&q=80', era:'recent', alt:'Otown Party performance' },
+    { src:'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80', era:'recent', alt:'Otown Party vibes' },
+    { src:'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&q=80', era:'recent', alt:'Otown Party crowd shot' },
+    { src:'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=80', era:'early', alt:'Otown Party beginnings' },
+    { src:'https://images.unsplash.com/photo-1566737236500-c8ac43014a67?w=800&q=80', era:'mid', alt:'Otown Party atmosphere' },
+    { src:'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80', era:'recent', alt:'Otown Party concert' },
+    { src:'https://images.unsplash.com/photo-1574236170878-a9aa77cb18a5?w=800&q=80', era:'recent', alt:'Otown Party dance floor' },
+  ];
+
+  let currentFilter = 'all';
+  let lightboxIdx = 0;
+  let filteredImages = [...galleryImages];
+
+  function buildGallery(imgs) {
+    const grid = document.getElementById('gallery-grid');
+    if (!grid) return;
+    grid.innerHTML = imgs.map((img, i) => `
+      <div class="masonry-item fade-up" data-era="${img.era}" onclick="openLightbox(${i})">
+        <img src="${img.src}" alt="${img.alt}" loading="lazy" />
+        <div class="masonry-overlay">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </div>
+      </div>
+    `).join('');
+    observeAnimations();
+  }
+
+  function filterGallery(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filteredImages = filter === 'all' ? galleryImages : galleryImages.filter(i => i.era === filter);
+    buildGallery(filteredImages);
+  }
+
+  function openLightbox(idx) {
+    lightboxIdx = idx;
+    document.getElementById('lightbox-img').src = filteredImages[idx].src;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function lightboxNav(dir) {
+    lightboxIdx = (lightboxIdx + dir + filteredImages.length) % filteredImages.length;
+    document.getElementById('lightbox-img').src = filteredImages[lightboxIdx].src;
+  }
+
+  document.getElementById('lightbox').addEventListener('click', function(e) {
+    if (e.target === this) closeLightbox();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lightboxNav(-1);
+    if (e.key === 'ArrowRight') lightboxNav(1);
+  });
+
+  buildGallery(galleryImages);
+
+  // ─── CONTACT FORM ───
+  function handleForm(e) {
+    e.preventDefault();
+    e.target.style.display = 'none';
+    document.getElementById('form-success').style.display = 'block';
+  }
+
+  // ─── RESPONSIVE ABOUT GRID ───
+  const mediaQuery = window.matchMedia('(max-width: 700px)');
+  function applyAboutGrid(mq) {
+    const grid = document.querySelector('#page-about .section > div[style*="grid-template-columns:1fr 1fr"]');
+    if (grid) grid.style.gridTemplateColumns = mq.matches ? '1fr' : '1fr 1fr';
+  }
+  mediaQuery.addEventListener('change', applyAboutGrid);
+  applyAboutGrid(mediaQuery);
+
+  // Responsive ticket grid
+  const mqTicket = window.matchMedia('(max-width: 800px)');
+  function appl
