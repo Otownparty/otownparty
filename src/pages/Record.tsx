@@ -254,7 +254,7 @@ See you on the dancefloor tonight.
     try {
       const { data: tickets, error: ticketsErr } = await supabase
         .from("tickets")
-        .select("ticket_type, used, edition")
+        .select("ticket_type, used, edition, buyer_email, used_by, used_at")
         .order("ticket_type");
 
       if (ticketsErr) throw ticketsErr;
