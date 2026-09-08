@@ -964,6 +964,19 @@ See you on the dancefloor tonight.
                             <td className="px-6 py-3.5 text-muted-foreground text-xs">
                               {b.claimedAt}
                             </td>
+                            <td className="px-6 py-3.5 text-xs">
+                              {(() => {
+                                const info = scanInfoByEmail.get(b.email?.toLowerCase() || "");
+                                return info ? (
+                                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-green-400/15 text-green-400 font-bold">
+                                    {info.by}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground">—</span>
+                                );
+                              })()}
+                            </td>
+
                           </tr>
                         ))}
                       </tbody>
