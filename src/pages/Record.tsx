@@ -139,7 +139,18 @@ type RawTicket = {
   ticket_type: string;
   used: boolean;
   edition: string | null;
+  buyer_email: string | null;
+  used_by: string | null;
+  used_at: string | null;
 };
+
+type StaffAccount = {
+  userId: string;
+  role: string;
+  username: string;
+  createdAt: string;
+};
+
 
 const Record = () => {
   const navigate = useNavigate();
