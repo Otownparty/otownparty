@@ -139,7 +139,18 @@ type RawTicket = {
   ticket_type: string;
   used: boolean;
   edition: string | null;
+  buyer_email: string | null;
+  used_by: string | null;
+  used_at: string | null;
 };
+
+type StaffAccount = {
+  userId: string;
+  role: string;
+  username: string;
+  createdAt: string;
+};
+
 
 const Record = () => {
   const navigate = useNavigate();
@@ -212,6 +223,73 @@ See you on the dancefloor tonight.
   const [loadingTickets, setLoadingTickets] = useState(false);
   const [loadingVendors, setLoadingVendors] = useState(false);
 
+  // Scanner accounts (admin only)
+  const [staff, setStaff] = useState<StaffAccount[]>([]);
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [staffBusy, setStaffBusy] = useState(false);
+
+  const loadStaff = async () => {
+    setStaffLoading(true);
+    const { data, error } = await supabase.functions.invoke("manage-staff", {
+      body: { action: "list" },
+    });
+    if (error) toast.error("Could not load staff accounts");
+    else setStaff((data?.staff as StaffAccount[]) || []);
+    setStaffLoading(false);
+  };
+
+  const createScanner = async () => {
+    if (!newUsername.trim() || newPassword.length < 6) {
+      toast.error("Enter a username and a password of at least 6 characters");
+      return;
+    }
+    setStaffBusy(true);
+    const { data, error } = await supabase.functions.invoke("manage-staff", {
+      body: { action: "create", username: newUsername, password: newPassword },
+    });
+    setStaffBusy(false);
+    if (error || data?.error) {
+      toast.error(data?.error || "Could not create that login");
+      return;
+    }
+    toast.success(`Scanner login "${data.username}" created`);
+    setNewUsername("");
+    setNewPassword("");
+    loadStaff();
+  };
+
+  const removeScanner = async (userId: string, username: string) => {
+    setStaffBusy(true);
+    const { data, error } = await supabase.functions.invoke("manage-staff", {
+      body: { action: "delete", userId },
+    });
+    setStaffBusy(false);
+    if (error || data?.error) {
+      toast.error(data?.error || "Could not remove that login");
+      return;
+    }
+    toast.success(`${username} removed`);
+    loadStaff();
+  };
+
+  const resetScannerPassword = async (userId: string, username: string) => {
+    const pwd = window.prompt(`New password for ${username} (min 6 characters)`);
+    if (!pwd) return;
+    setStaffBusy(true);
+    const { data, error } = await supabase.functions.invoke("manage-staff", {
+      body: { action: "reset_password", userId, password: pwd },
+    });
+    setStaffBusy(false);
+    if (error || data?.error) {
+      toast.error(data?.error || "Could not update the password");
+      return;
+    }
+    toast.success(`Password updated for ${username}`);
+  };
+
+
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) {
@@ -235,7 +313,7 @@ See you on the dancefloor tonight.
 
   const fetchAllData = async () => {
     setLoading(true);
-    await Promise.all([fetchTicketStats(), fetchTicketPurchases(), fetchVendors()]);
+    await Promise.all([fetchTicketStats(), fetchTicketPurchases(), fetchVendors(), loadStaff()]);
     setLoading(false);
   };
 
@@ -243,7 +321,7 @@ See you on the dancefloor tonight.
     try {
       const { data: tickets, error: ticketsErr } = await supabase
         .from("tickets")
-        .select("ticket_type, used, edition")
+        .select("ticket_type, used, edition, buyer_email, used_by, used_at")
         .order("ticket_type");
 
       if (ticketsErr) throw ticketsErr;
@@ -531,6 +609,18 @@ See you on the dancefloor tonight.
   const totalScanned = stats.reduce((sum, s) => sum + s.scanned, 0);
 
   const editionBuyers = buyers.filter((b) => b.edition === selectedEdition);
+
+  // Who scanned each buyer's ticket, keyed by buyer email
+  const scanInfoByEmail = new Map<string, { by: string; at: string | null }>();
+  editionTickets.forEach((t) => {
+    if (t.used && t.buyer_email && t.used_by) {
+      const key = t.buyer_email.toLowerCase();
+      if (!scanInfoByEmail.has(key)) {
+        scanInfoByEmail.set(key, { by: t.used_by, at: t.used_at });
+      }
+    }
+  });
+
 
   const filteredTicketPurchases = ticketPurchases
     .filter((t) => (t.edition || CURRENT_EDITION) === selectedEdition)
@@ -835,6 +925,10 @@ See you on the dancefloor tonight.
                           <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             Date
                           </th>
+                          <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            Scanned By
+                          </th>
+
                         </tr>
                       </thead>
                       <tbody>
@@ -870,6 +964,19 @@ See you on the dancefloor tonight.
                             <td className="px-6 py-3.5 text-muted-foreground text-xs">
                               {b.claimedAt}
                             </td>
+                            <td className="px-6 py-3.5 text-xs">
+                              {(() => {
+                                const info = scanInfoByEmail.get(b.email?.toLowerCase() || "");
+                                return info ? (
+                                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-green-400/15 text-green-400 font-bold">
+                                    {info.by}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground">—</span>
+                                );
+                              })()}
+                            </td>
+
                           </tr>
                         ))}
                       </tbody>

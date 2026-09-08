@@ -41,6 +41,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    const scannerEmail = userData.user.email ?? "";
+    const scannedByName = scannerEmail.endsWith("@staff.otownparty.com")
+      ? scannerEmail.split("@")[0]
+      : scannerEmail || userData.user.id;
+
+
+
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -103,7 +110,7 @@ Deno.serve(async (req) => {
         const { error: updErr } = await admin.from("vendor_applications").update({
           scanned: true,
           scanned_at: new Date().toISOString(),
-          scanned_by: userData.user.email ?? userData.user.id,
+          scanned_by: scannedByName,
         }).eq("id", vendor.id).eq("scanned", false);
         if (!updErr) scannedJustNow = true;
       }
@@ -148,7 +155,7 @@ Deno.serve(async (req) => {
       const { error: updErr } = await admin.from("tickets").update({
         used: true,
         used_at: new Date().toISOString(),
-        used_by: userData.user.email ?? userData.user.id,
+        used_by: scannedByName,
       }).eq("id", ticket.id).eq("used", false);
       if (!updErr) usedJustNow = true;
     }
