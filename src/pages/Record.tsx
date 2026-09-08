@@ -313,7 +313,7 @@ See you on the dancefloor tonight.
 
   const fetchAllData = async () => {
     setLoading(true);
-    await Promise.all([fetchTicketStats(), fetchTicketPurchases(), fetchVendors()]);
+    await Promise.all([fetchTicketStats(), fetchTicketPurchases(), fetchVendors(), loadStaff()]);
     setLoading(false);
   };
 
