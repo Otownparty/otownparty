@@ -223,6 +223,73 @@ See you on the dancefloor tonight.
   const [loadingTickets, setLoadingTickets] = useState(false);
   const [loadingVendors, setLoadingVendors] = useState(false);
 
+  // Scanner accounts (admin only)
+  const [staff, setStaff] = useState<StaffAccount[]>([]);
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [staffBusy, setStaffBusy] = useState(false);
+
+  const loadStaff = async () => {
+    setStaffLoading(true);
+    const { data, error } = await supabase.functions.invoke("manage-staff", {
+      body: { action: "list" },
+    });
+    if (error) toast.error("Could not load staff accounts");
+    else setStaff((data?.staff as StaffAccount[]) || []);
+    setStaffLoading(false);
+  };
+
+  const createScanner = async () => {
+    if (!newUsername.trim() || newPassword.length < 6) {
+      toast.error("Enter a username and a password of at least 6 characters");
+      return;
+    }
+    setStaffBusy(true);
+    const { data, error } = await supabase.functions.invoke("manage-staff", {
+      body: { action: "create", username: newUsername, password: newPassword },
+    });
+    setStaffBusy(false);
+    if (error || data?.error) {
+      toast.error(data?.error || "Could not create that login");
+      return;
+    }
+    toast.success(`Scanner login "${data.username}" created`);
+    setNewUsername("");
+    setNewPassword("");
+    loadStaff();
+  };
+
+  const removeScanner = async (userId: string, username: string) => {
+    setStaffBusy(true);
+    const { data, error } = await supabase.functions.invoke("manage-staff", {
+      body: { action: "delete", userId },
+    });
+    setStaffBusy(false);
+    if (error || data?.error) {
+      toast.error(data?.error || "Could not remove that login");
+      return;
+    }
+    toast.success(`${username} removed`);
+    loadStaff();
+  };
+
+  const resetScannerPassword = async (userId: string, username: string) => {
+    const pwd = window.prompt(`New password for ${username} (min 6 characters)`);
+    if (!pwd) return;
+    setStaffBusy(true);
+    const { data, error } = await supabase.functions.invoke("manage-staff", {
+      body: { action: "reset_password", userId, password: pwd },
+    });
+    setStaffBusy(false);
+    if (error || data?.error) {
+      toast.error(data?.error || "Could not update the password");
+      return;
+    }
+    toast.success(`Password updated for ${username}`);
+  };
+
+
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) {
