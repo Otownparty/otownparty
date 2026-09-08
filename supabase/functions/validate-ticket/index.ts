@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
         const { error: updErr } = await admin.from("vendor_applications").update({
           scanned: true,
           scanned_at: new Date().toISOString(),
-          scanned_by: userData.user.email ?? userData.user.id,
+          scanned_by: scannedByName,
         }).eq("id", vendor.id).eq("scanned", false);
         if (!updErr) scannedJustNow = true;
       }
@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
       const { error: updErr } = await admin.from("tickets").update({
         used: true,
         used_at: new Date().toISOString(),
-        used_by: userData.user.email ?? userData.user.id,
+        used_by: scannedByName,
       }).eq("id", ticket.id).eq("used", false);
       if (!updErr) usedJustNow = true;
     }
