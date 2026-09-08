@@ -610,6 +610,18 @@ See you on the dancefloor tonight.
 
   const editionBuyers = buyers.filter((b) => b.edition === selectedEdition);
 
+  // Who scanned each buyer's ticket, keyed by buyer email
+  const scanInfoByEmail = new Map<string, { by: string; at: string | null }>();
+  editionTickets.forEach((t) => {
+    if (t.used && t.buyer_email && t.used_by) {
+      const key = t.buyer_email.toLowerCase();
+      if (!scanInfoByEmail.has(key)) {
+        scanInfoByEmail.set(key, { by: t.used_by, at: t.used_at });
+      }
+    }
+  });
+
+
   const filteredTicketPurchases = ticketPurchases
     .filter((t) => (t.edition || CURRENT_EDITION) === selectedEdition)
     .filter((t) =>
