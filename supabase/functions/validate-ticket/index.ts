@@ -41,6 +41,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    const scannerEmail = userData.user.email ?? "";
+    const scannedByName = scannerEmail.endsWith("@staff.otownparty.com")
+      ? scannerEmail.split("@")[0]
+      : scannerEmail || userData.user.id;
+
+
+
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
