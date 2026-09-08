@@ -925,6 +925,10 @@ See you on the dancefloor tonight.
                           <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             Date
                           </th>
+                          <th className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            Scanned By
+                          </th>
+
                         </tr>
                       </thead>
                       <tbody>
