@@ -88,7 +88,7 @@ const Index = () => {
               <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-2">The Movement</p>
               <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-4">Africa's Premier Rave Experience</h2>
               <p className="text-muted-foreground max-w-2xl mb-12 leading-relaxed">
-                What started as a bold vision has grown into 13 iconic editions — each one more electrifying than the last. Otown Party is more than an event. It's a movement.
+                What started as a bold vision has grown into 14 iconic editions — each one more electrifying than the last. Otown Party is more than an event. It's a movement.
               </p>
             </ScrollReveal>
 

@@ -44,6 +44,11 @@ import {
 const CURRENT_EDITION = "Otown Party 15.0 - Afro All Black Edition";
 const PAST_EDITIONS: { value: string; label: string; date: string }[] = [
   {
+    value: "Otown Party 14.0 - Ede Edition",
+    label: "Otown Party 14.0",
+    date: "Ede Edition · September 2026",
+  },
+  {
     value: "Otown Party 13.0 - Faaji Extra",
     label: "Otown Party 13.0",
     date: "Faaji Extra · August 2026",
@@ -170,7 +175,7 @@ const Record = () => {
   const DEFAULT_REMINDER_SUBJECT = "🚨 TONIGHT: Otown Party 15.0 — Afro All Black Edition. Here's your gate guide";
   const DEFAULT_REMINDER_MESSAGE = `Hey Raver,
 
-Today is the day. 🔥 Otown Party 15.0: Afro All Black Edition takes over Ideal Hotels and Bar, Ede TONIGHT.
+Today is the day. 🔥 Otown Party 15.0: Afro All Black Edition takes over Oyo Durbar Stadium, Oyo TONIGHT.
 
 📅 Today — Saturday, 17th October 2026
 🕕 Gates open 6PM · Music till 4AM

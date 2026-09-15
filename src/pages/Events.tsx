@@ -17,6 +17,7 @@ import edition11 from "@/assets/edition-11.jpg";
 import edition12 from "@/assets/edition-12.png";
 import edition13 from "@/assets/edition-13.jpg";
 import edition14 from "@/assets/edition-14.jpg";
+import edition15 from "@/assets/edition-15.jpg";
 
 export interface Edition {
   num: number;
@@ -34,6 +35,7 @@ export interface Edition {
  * via src/data/editions.ts) so nothing else needs editing.
  */
 export const editions: Edition[] = [
+  { num: 14, date: "Sat 5th September 2026", title: "Ede Edition", desc: "The movement crossed into Osun State — Otown Party took over Ideal Hotels and Bar, Ede for one unforgettable night.", img: edition14 },
   { num: 13, date: "Sat 1st August 2026", title: "Faaji Extra", desc: "Faaji Extra took over Durbar Stadium, Oyo — one night of extra everything: sound, culture and pure rave energy.", img: edition13 },
   { num: 12, date: "Sat 27th June 2026", title: "Iseyin Edition", desc: "The movement moved to Iseyin — one night of rave, culture and connection under the stars at Silver ZB Resort.", img: edition12 },
   { num: 11, date: "Sat 30th May 2026", title: "Glow in the 90s — Chapter II", desc: "The Anniversary Edition — a neon-soaked 90s throwback that lit up Oyo Durbar Stadium.", img: edition11 },
@@ -71,14 +73,14 @@ export interface NextEdition {
  * edition's details.
  */
 export const nextEdition: NextEdition = {
-  num: 14,
-  title: "Ede Edition",
-  desc: "The movement crosses into Osun State. Otown Party lands in Ede for one night of rave, culture and connection.",
-  date: "Sat 5th September 2026",
-  shortDate: "September 5, 2026",
+  num: 15,
+  title: "Afro All Black Edition",
+  desc: "All black, all Afro. Music, games, dance, drink and connect — Otown Party returns to Oyo Durbar Stadium for the blackest, boldest night yet.",
+  date: "Sat 17th October 2026",
+  shortDate: "October 17, 2026",
   time: "6PM–4AM",
-  venue: "Ideal Hotels and Bar, Agbale Area, Ede, Osun State",
-  img: edition14,
+  venue: "Oyo Durbar Stadium, Oyo State",
+  img: edition15,
 };
 
 const Events = () => {
