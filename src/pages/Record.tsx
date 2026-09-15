@@ -41,7 +41,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-const CURRENT_EDITION = "Otown Party 14.0 - Ede Edition";
+const CURRENT_EDITION = "Otown Party 15.0 - Afro All Black Edition";
 const PAST_EDITIONS: { value: string; label: string; date: string }[] = [
   {
     value: "Otown Party 13.0 - Faaji Extra",
@@ -167,14 +167,14 @@ const Record = () => {
   const [clearing, setClearing] = useState(false);
 
   // Party reminder email state
-  const DEFAULT_REMINDER_SUBJECT = "🚨 TONIGHT: Otown Party 14.0 — Ede Edition. Here's your gate guide";
+  const DEFAULT_REMINDER_SUBJECT = "🚨 TONIGHT: Otown Party 15.0 — Afro All Black Edition. Here's your gate guide";
   const DEFAULT_REMINDER_MESSAGE = `Hey Raver,
 
-Today is the day. 🔥 Otown Party 14.0: Ede Edition takes over Ideal Hotels and Bar, Ede TONIGHT.
+Today is the day. 🔥 Otown Party 15.0: Afro All Black Edition takes over Ideal Hotels and Bar, Ede TONIGHT.
 
-📅 Today — Saturday, 5th September 2026
+📅 Today — Saturday, 17th October 2026
 🕕 Gates open 6PM · Music till 4AM
-📍 Ideal Hotels and Bar, Agbale Area, Ede, Osun State
+📍 Oyo Durbar Stadium, Oyo State
 
 HOW TO GET IN — READ THIS BEFORE YOU LEAVE HOME
 
@@ -189,7 +189,7 @@ HOW TO GET IN — READ THIS BEFORE YOU LEAVE HOME
 TO MAKE TONIGHT LEGENDARY
 
 • Arrive early — 6PM to 8PM is the smoothest entry window, and the opening set is worth it.
-• Dress the part. The Ede Edition is a whole mood — come in your freshest fit.
+• Dress the part. The Afro All Black Edition is a whole mood — come in your freshest fit.
 • Move with your squad. The energy is always bigger with your people.
 • Stay hydrated, pace the drinks, and look out for each other.
 • Vendors, food, drinks and shisha are all on ground — come with cash and transfer ready.

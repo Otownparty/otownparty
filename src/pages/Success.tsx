@@ -40,11 +40,11 @@ const Success = () => {
             {/* Body */}
             <p className="text-muted-foreground text-sm leading-relaxed mb-4">
               You've successfully joined the guest list for{" "}
-              <span className="text-foreground font-semibold">Otown Party 14.0 · Ede Edition.</span>
+              <span className="text-foreground font-semibold">Otown Party 15.0 · Afro All Black Edition.</span>
             </p>
 
             <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-              Saturday, 5th September 2026 · 6PM–4AM · Ideal Hotels and Bar, Agbale Area, Ede, Osun State. Prepare for a night of raw energy, unmatched sound, and the culture at its loudest. We're setting the vibe to make this a core memory.
+              Saturday, 17th October 2026 · 6PM–4AM · Oyo Durbar Stadium, Oyo State. Prepare for a night of raw energy, unmatched sound, and the culture at its loudest. We're setting the vibe to make this a core memory.
             </p>
 
             <p className="text-muted-foreground text-sm leading-relaxed mb-6">

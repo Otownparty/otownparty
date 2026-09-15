@@ -146,8 +146,8 @@ const Tickets = () => {
         <div className="container mx-auto max-w-6xl px-4">
           <ScrollReveal>
             <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-2">Tickets & Contact</p>
-            <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">Otown Party 14.0 · Ede Edition</h1>
-            <p className="text-muted-foreground max-w-2xl mb-8">Sat 5th September 2026 · 6PM–4AM · Ideal Hotels and Bar, Agbale Area, Ede, Osun State. Secure your place — tickets are limited.</p>
+            <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">Otown Party 15.0 · Afro All Black Edition</h1>
+            <p className="text-muted-foreground max-w-2xl mb-8">Sat 17th October 2026 · 6PM–4AM · Oyo Durbar Stadium, Oyo State. Secure your place — tickets are limited.</p>
           </ScrollReveal>
 
           {/* Venue sales banner */}
@@ -181,7 +181,7 @@ const Tickets = () => {
                   <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-primary/90 text-sm font-semibold tracking-wide">
                     <span className="flex items-center gap-2">
                       <Sparkles size={16} className="animate-pulse" />
-                      <span>Ideal Hotels and Bar, Agbale Area, Ede</span>
+                      <span>Oyo Durbar Stadium, Oyo State</span>
                     </span>
                     <span className="hidden sm:inline text-border">|</span>
                     <span className="flex items-center gap-2">
