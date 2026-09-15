@@ -984,7 +984,80 @@ See you on the dancefloor tonight.
                   )}
                 </div>
               </div>
+
+              {/* Scanner Accounts */}
+              <div className="bg-card border border-border rounded-xl overflow-hidden mt-8">
+                <div className="px-6 py-4 border-b border-border">
+                  <h2 className="font-display font-bold text-lg text-foreground">
+                    Scanner Logins
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Create gate staff logins. They can only open the scanner page.
+                  </p>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="flex flex-wrap gap-3">
+                    <input
+                      value={newUsername}
+                      onChange={(e) => setNewUsername(e.target.value)}
+                      placeholder="Username"
+                      className="flex-1 min-w-[160px] px-4 py-2.5 rounded-lg bg-background border border-border text-sm text-foreground"
+                    />
+                    <input
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Password"
+                      className="flex-1 min-w-[160px] px-4 py-2.5 rounded-lg bg-background border border-border text-sm text-foreground"
+                    />
+                    <button
+                      onClick={createScanner}
+                      disabled={staffBusy}
+                      className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 transition disabled:opacity-50"
+                    >
+                      {staffBusy ? "Working..." : "Add Scanner"}
+                    </button>
+                  </div>
+
+                  {staffLoading ? (
+                    <div className="py-6 flex justify-center">
+                      <Loader2 className="animate-spin text-primary" size={20} />
+                    </div>
+                  ) : staff.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No staff logins yet.</p>
+                  ) : (
+                    <div className="divide-y divide-border border border-border rounded-lg">
+                      {staff.map((s) => (
+                        <div key={s.userId} className="flex items-center justify-between gap-3 px-4 py-3">
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">{s.username}</p>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">{s.role}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => resetScannerPassword(s.userId, s.username)}
+                              disabled={staffBusy}
+                              className="px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/20 transition disabled:opacity-50"
+                            >
+                              Reset Password
+                            </button>
+                            {s.role !== "admin" && (
+                              <button
+                                onClick={() => removeScanner(s.userId, s.username)}
+                                disabled={staffBusy}
+                                className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500/20 transition disabled:opacity-50"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </TabsContent>
+
 
             {/* VENDORS TAB */}
             <TabsContent value="vendors">
