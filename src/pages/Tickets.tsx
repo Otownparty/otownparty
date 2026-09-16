@@ -171,7 +171,7 @@ const Tickets = () => {
                   </div>
 
                   <h2 className="font-display font-bold text-3xl sm:text-4xl text-foreground leading-tight">
-                    Come prepared to rave in Ede<span className="text-primary">.</span>
+                    Come prepared to rave all black in Oyo<span className="text-primary">.</span>
                   </h2>
 
                   <p className="max-w-xl text-sm sm:text-base text-muted-foreground leading-relaxed">
