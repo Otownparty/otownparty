@@ -13,7 +13,7 @@ import gallery3 from "@/assets/gallery-3.jpg";
 import gallery4 from "@/assets/gallery-4.jpg";
 
 const stats = [
-  { value: "13", label: "Editions Hosted" },
+  { value: "14", label: "Editions Hosted" },
   { value: "5K+", label: "Ravers Per Edition" },
   { value: "50+", label: "Artists Featured" },
   { value: "1", label: "Movement" },
