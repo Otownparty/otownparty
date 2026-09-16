@@ -7,10 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const CURRENT_EDITION = "Otown Party 14.0 - Ede Edition";
-const EVENT_DATE = "Saturday, 5th September 2026";
+const CURRENT_EDITION = "Otown Party 15.0 - Afro All Black Edition";
+const EVENT_DATE = "Saturday, 17th October 2026";
 const EVENT_TIME = "6PM – 4AM";
-const EVENT_VENUE = "Ideal Hotels and Bar, Agbale Area, Ede, Osun State";
+const EVENT_VENUE = "Oyo Durbar Stadium, Oyo State";
 
 const escapeHtml = (s: string) =>
   String(s).replace(/[&<>"']/g, (c) => ({
@@ -26,11 +26,11 @@ function textToHtml(body: string): string {
   return paragraphs.join("");
 }
 
-const defaultSubject = `🚨 TONIGHT: Otown Party 14.0 — Ede Edition. Here's your gate guide`;
+const defaultSubject = `🚨 TONIGHT: Otown Party 15.0 — Afro All Black Edition. Here's your gate guide`;
 
 const defaultBody = `Hey Raver,
 
-Today is the day. 🔥 Otown Party 14.0: Ede Edition takes over ${EVENT_VENUE} TONIGHT.
+Today is the day. 🔥 Otown Party 15.0: Afro All Black Edition takes over ${EVENT_VENUE} TONIGHT.
 
 📅 Today — ${EVENT_DATE}
 🕕 Gates open 6PM · Music till 4AM
@@ -49,7 +49,7 @@ HOW TO GET IN — READ THIS BEFORE YOU LEAVE HOME
 TO MAKE TONIGHT LEGENDARY
 
 • Arrive early — 6PM to 8PM is the smoothest entry window, and the opening set is worth it.
-• Dress the part. The Ede Edition is a whole mood — come in your freshest fit.
+• Dress the part. The Afro All Black Edition is a whole mood — come in your freshest fit.
 • Move with your squad. The energy is always bigger with your people.
 • Stay hydrated, pace the drinks, and look out for each other.
 • Vendors, food, drinks and shisha are all on ground — come with cash and transfer ready.
@@ -65,8 +65,8 @@ function buildEmailHtml(subject: string, body: string) {
   return `
     <div style="font-family: Arial, Helvetica, sans-serif; max-width:600px; margin:0 auto; padding:0; background:#ffffff;">
       <div style="background:linear-gradient(135deg,#0a0a0a 0%, #1a1208 100%); padding:32px 24px; text-align:center;">
-        <p style="margin:0 0 6px; color:#f5a623; font-size:11px; font-weight:bold; letter-spacing:3px; text-transform:uppercase;">Otown Party 14.0</p>
-        <h1 style="margin:0; color:#ffffff; font-size:26px; letter-spacing:1px;">Ede Edition</h1>
+        <p style="margin:0 0 6px; color:#f5a623; font-size:11px; font-weight:bold; letter-spacing:3px; text-transform:uppercase;">Otown Party 15.0</p>
+        <h1 style="margin:0; color:#ffffff; font-size:26px; letter-spacing:1px;">Afro All Black Edition</h1>
         <p style="margin:8px 0 0; color:#e8728a; font-size:13px;">${EVENT_DATE} · ${EVENT_VENUE}</p>
       </div>
       <div style="padding:32px 28px 24px; background:#ffffff;">

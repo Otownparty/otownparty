@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const edition = vendor.edition || "Otown Party 14.0 - Ede Edition";
+    const edition = vendor.edition || "Otown Party 15.0 - Afro All Black Edition";
     const payloadObj = {
       vid: vendor.id,
       n: vendor.brand_name,
@@ -85,8 +85,8 @@ Deno.serve(async (req) => {
 
     const emailHtml = `
       <div style="font-family:Arial,sans-serif; max-width:600px; margin:0 auto; padding:24px; color:#0a0a0a;">
-        <h1 style="color:#f5a623; margin:0 0 4px;">Otown Party 14.0</h1>
-        <p style="margin:0 0 24px; color:#666;">Ede Edition — Sat 5th September 2026 · 6PM–4AM · Ideal Hotels and Bar, Agbale Area, Ede, Osun State</p>
+        <h1 style="color:#f5a623; margin:0 0 4px;">Otown Party 15.0</h1>
+        <p style="margin:0 0 24px; color:#666;">Afro All Black Edition — Sat 17th October 2026 · 6PM–4AM · Oyo Durbar Stadium, Oyo State</p>
         <p>Hi ${String(vendor.brand_name).replace(/[<>]/g, "")},</p>
         <p>Your vendor application and payment have been confirmed. Below is your unique vendor QR code — please present it at the ticket stand on event day for your access and setup.</p>
         <div style="border:1px solid #eee; border-radius:12px; padding:20px; margin:16px 0; text-align:center; background:#fafafa;">
@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: fromAddress,
         to: [vendor.email],
-        subject: `Your Otown Party 14.0 Vendor Pass 🎉`,
+        subject: `Your Otown Party 15.0 Vendor Pass 🎉`,
         html: emailHtml,
         attachments: [attachment],
       }),

@@ -59,13 +59,13 @@ const Index = () => {
               Let's Rave
             </p>
             <p className="text-xs sm:text-sm uppercase tracking-[0.25em] text-muted-foreground">
-              Otown Party 14.0 · Ede Edition · 5th September 2026
+              Otown Party 15.0 · Afro All Black Edition · 17th October 2026
             </p>
             <div className="w-full flex flex-col items-center gap-4 py-4">
               <CountdownTimer />
               <div className="flex flex-wrap gap-4 justify-center text-xs sm:text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5"><Calendar size={14} className="text-primary" /> Sat 5th Sept · 6PM–4AM</span>
-                <span className="flex items-center gap-1.5"><MapPin size={14} className="text-primary" /> Ideal Hotels & Bar, Ede</span>
+                <span className="flex items-center gap-1.5"><Calendar size={14} className="text-primary" /> Sat 17th Oct · 6PM–4AM</span>
+                <span className="flex items-center gap-1.5"><MapPin size={14} className="text-primary" /> Oyo Durbar Stadium, Oyo</span>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
@@ -88,7 +88,7 @@ const Index = () => {
               <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-2">The Movement</p>
               <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-4">Africa's Premier Rave Experience</h2>
               <p className="text-muted-foreground max-w-2xl mb-12 leading-relaxed">
-                What started as a bold vision has grown into 13 iconic editions — each one more electrifying than the last. Otown Party is more than an event. It's a movement.
+                What started as a bold vision has grown into 14 iconic editions — each one more electrifying than the last. Otown Party is more than an event. It's a movement.
               </p>
             </ScrollReveal>
 
