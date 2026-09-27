@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Instagram, Youtube } from "lucide-react";
 import logo from "@/assets/logo-trans.png";
+import { editions } from "@/data/editions";
 
 const Footer = () => {
   return (
@@ -33,20 +34,7 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-bold text-sm uppercase tracking-wider mb-4 text-foreground">Past Editions</h4>
             <ul className="space-y-2">
-              {[
-                "The Genesis · April 2024",
-                "Frenzy Edition · June 2024",
-                "Y2K Edition · Sept 2024",
-                "Halloween: Terror By Night · Oct 2024",
-                "Party of the Year · Dec 2024",
-                "XOXO Edition · Feb 2025",
-                "Owambe Edition · May 2025",
-                "Haunted Groove Halloween · Oct 2025",
-                "POTY · Dec 2025",
-                "Denim After Dark · March 2026",
-                "Glow in the 90s Chapter II · May 2026",
-                "Iseyin Edition · June 2026",
-              ].map((e) => (
+              {editions.map((ed) => `${ed.title} · ${ed.date.replace(/^\w+\s+\S+\s+/, "")}`).map((e) => (
                 <li key={e}>
                   <Link to="/events" className="text-sm text-muted-foreground hover:text-primary transition-colors">{e}</Link>
                 </li>
