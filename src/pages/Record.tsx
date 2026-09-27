@@ -1270,8 +1270,8 @@ See you on the dancefloor tonight.
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
                   Current
                 </p>
-                <p className="font-display font-bold text-foreground">Otown Party 12.0</p>
-                <p className="text-xs text-muted-foreground">Iseyin Edition · June 2026</p>
+                <p className="font-display font-bold text-foreground">Otown Party 15.0</p>
+                <p className="text-xs text-muted-foreground">Afro All Black Edition · October 2026</p>
               </button>
               {PAST_EDITIONS.map((ed) => {
                 const ticketCount = rawTickets.filter(
