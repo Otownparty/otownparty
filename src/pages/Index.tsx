@@ -75,8 +75,8 @@ const Index = () => {
               >
                 Get Tickets Now
               </Link>
-              <Link to="/gallery" className="px-8 py-3.5 rounded-lg border border-foreground/30 text-foreground font-semibold text-sm hover:border-primary hover:text-primary transition-all">
-                View Past Moments
+              <Link to="/partner" className="px-8 py-3.5 rounded-lg border border-foreground/30 text-foreground font-semibold text-sm hover:border-primary hover:text-primary transition-all">
+                Find A Partner
               </Link>
             </div>
           </div>
