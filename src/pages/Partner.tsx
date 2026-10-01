@@ -120,29 +120,44 @@ const Partner = () => {
     setProfileLoading(false);
   };
 
+  const fnError = async (error: any, data: any) => {
+    if (data?.error) return data.error;
+    try {
+      const body = await error?.context?.json?.();
+      if (body?.error) return body.error;
+    } catch {}
+    return error?.message ?? "Something went wrong";
+  };
+
   const sendOtp = async () => {
     if (!email.trim()) return toast.error("Enter your email first");
     setSendingOtp(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { shouldCreateUser: true },
+    const { data, error } = await supabase.functions.invoke("send-partner-otp", {
+      body: { email: email.trim() },
     });
     setSendingOtp(false);
-    if (error) return toast.error(error.message);
+    if (error || data?.error) return toast.error(await fnError(error, data));
     toast.success("Code sent! Check your email.");
+    setOtp("");
     setAuthStep("otp");
   };
 
   const verifyOtp = async () => {
     if (otp.length !== 6) return toast.error("Enter the 6-digit code");
     setVerifyingOtp(true);
-    const { error } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token: otp,
-      type: "email",
+    const { data, error } = await supabase.functions.invoke("verify-partner-otp", {
+      body: { email: email.trim(), code: otp },
+    });
+    if (error || !data?.token_hash) {
+      setVerifyingOtp(false);
+      return toast.error(await fnError(error, data));
+    }
+    const { error: authErr } = await supabase.auth.verifyOtp({
+      token_hash: data.token_hash,
+      type: "magiclink",
     });
     setVerifyingOtp(false);
-    if (error) return toast.error(error.message);
+    if (authErr) return toast.error(authErr.message);
   };
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
