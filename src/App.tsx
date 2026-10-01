@@ -17,6 +17,8 @@ import Success from "./pages/Success";
 import Record from "./pages/Record";
 import Vendor from "./pages/Vendor";
 import VendorSuccess from "./pages/VendorSuccess";
+import Partner from "./pages/Partner";
+import PartnerReview from "./pages/staff/PartnerReview";
 import IntroSplash, { shouldShowIntro } from "./components/IntroSplash";
 
 const queryClient = new QueryClient();
@@ -45,6 +47,8 @@ const App = () => {
             <Route path="/record" element={<Record />} />
             <Route path="/vendor" element={<Vendor />} />
             <Route path="/vendor-success" element={<VendorSuccess />} />
+            <Route path="/partner" element={<Partner />} />
+            <Route path="/staff/partner-review" element={<PartnerReview />} />
             <Route path="/records" element={<Record />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
