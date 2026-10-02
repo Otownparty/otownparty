@@ -19,8 +19,12 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const email = String(body?.email ?? "").trim().toLowerCase();
+    const deviceId = String(body?.device_id ?? "").trim();
     if (!email || email.length > 255 || !EMAIL_RE.test(email)) {
       return json({ error: "A valid email is required" }, 400);
+    }
+    if (!deviceId || deviceId.length > 100) {
+      return json({ error: "Missing device id" }, 400);
     }
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
@@ -30,6 +34,20 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // One account per device: if this device is already linked to a
+    // different email, block before even sending a code.
+    const { data: lock } = await supabase
+      .from("partner_device_locks")
+      .select("email")
+      .eq("device_id", deviceId)
+      .maybeSingle();
+    if (lock && lock.email !== email) {
+      return json(
+        { error: "This device already has a Find a Partner account. Each device can only be linked to one account." },
+        403
+      );
+    }
 
     const buf = new Uint32Array(1);
     crypto.getRandomValues(buf);
