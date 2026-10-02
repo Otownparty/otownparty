@@ -295,7 +295,7 @@ const Partner = () => {
           </div>
         )}
 
-        {session && !profileLoading && !profile && !showForm && !agreedDisclaimer && (
+        {session && !profileLoading && !profile && !showForm && (
           <div className="bg-card border border-border rounded-xl p-6 space-y-4 animate-fade-up">
             <h2 className="font-display text-xl">Before you continue</h2>
             <p className="text-sm text-foreground/70 leading-relaxed">
@@ -320,7 +320,7 @@ const Partner = () => {
           </div>
         )}
 
-        {session && !profileLoading && !profile && showForm && (
+        {session && !profileLoading && (!profile || profile.status === "rejected") && showForm && (
           <div className="bg-card border border-border rounded-xl p-6 space-y-5 animate-fade-up">
             <h2 className="font-display text-xl">Create your profile</h2>
 
@@ -430,7 +430,7 @@ const Partner = () => {
           </div>
         )}
 
-        {session && !profileLoading && profile?.status === "rejected" && (
+        {session && !profileLoading && profile?.status === "rejected" && !showForm && (
           <div className="bg-card border border-border rounded-xl p-6 text-center space-y-3 animate-fade-up">
             <p className="font-display text-lg">Your profile needs a tweak</p>
             {profile.reject_reason && (
