@@ -35,6 +35,32 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_match_reads: {
+        Row: {
+          last_read_at: string
+          match_id: string
+          user_id: string
+        }
+        Insert: {
+          last_read_at?: string
+          match_id: string
+          user_id: string
+        }
+        Update: {
+          last_read_at?: string
+          match_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_match_reads_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "partner_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_matches: {
         Row: {
           chat_expires_at: string | null
