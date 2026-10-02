@@ -18,13 +18,11 @@ import {
   ArrowLeft,
   Mail,
   Send,
-  Heart,
 
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PartnerAdminPanel from "@/components/staff/PartnerAdminPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -730,7 +728,7 @@ See you on the dancefloor tonight.
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-8">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
               <TabsTrigger value="overview" className="gap-2">
                 <Ticket size={16} />
                 Ticket Purchases
@@ -739,10 +737,6 @@ See you on the dancefloor tonight.
                 <Store size={16} />
                 Vendors
                 <span className="ml-1 text-xs text-muted-foreground">({vendors.length})</span>
-              </TabsTrigger>
-              <TabsTrigger value="partner" className="gap-2">
-                <Heart size={16} />
-                Find a Partner
               </TabsTrigger>
             </TabsList>
 
@@ -1217,10 +1211,6 @@ See you on the dancefloor tonight.
                   {(filteredVendors.filter((v) => v.status === "paid").reduce((sum, v) => sum + v.amount, 0) / 100).toLocaleString()}
                 </span>
               </div>
-            </TabsContent>
-
-            <TabsContent value="partner">
-              <PartnerAdminPanel />
             </TabsContent>
           </Tabs>
         )}
