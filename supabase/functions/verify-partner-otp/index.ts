@@ -1,4 +1,5 @@
-// Verify a Find a Partner sign-in code and return a magic-link token_hash.
+// Verify a Find a Partner sign-in code, lock the device to that email, and
+// return a magic-link token_hash the client exchanges for a real session.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -18,8 +19,12 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const email = String(body?.email ?? "").trim().toLowerCase();
     const code = String(body?.code ?? "").trim();
+    const deviceId = String(body?.device_id ?? "").trim();
     if (!email || email.length > 255 || !/^\d{6}$/.test(code)) {
       return json({ error: "Email and a 6-digit code are required" }, 400);
+    }
+    if (!deviceId || deviceId.length > 100) {
+      return json({ error: "Missing device id" }, 400);
     }
 
     const supabase = createClient(
@@ -27,6 +32,20 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
+
+    // Re-check the device lock here too (not just in send-partner-otp) so a
+    // stale/replayed request can't slip a second account onto one device.
+    const { data: lock } = await supabase
+      .from("partner_device_locks")
+      .select("email")
+      .eq("device_id", deviceId)
+      .maybeSingle();
+    if (lock && lock.email !== email) {
+      return json(
+        { error: "This device already has a Find a Partner account. Each device can only be linked to one account." },
+        403
+      );
+    }
 
     const { data: row, error: fetchErr } = await supabase
       .from("partner_otp_codes").select("*")
@@ -63,6 +82,13 @@ Deno.serve(async (req) => {
       token_hash = new URL(link.properties.action_link).searchParams.get("token");
     }
     if (!token_hash) throw new Error("Could not generate sign-in token");
+
+    // Lock the device to this email now that sign-in has succeeded. Upsert
+    // is safe: same device + same email just refreshes created_at.
+    await supabase.from("partner_device_locks").upsert(
+      { device_id: deviceId, email, user_id: link?.user?.id ?? null },
+      { onConflict: "device_id" }
+    );
 
     return json({ token_hash });
   } catch (err) {
