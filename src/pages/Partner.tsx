@@ -154,7 +154,7 @@ const Partner = () => {
     }
     const { error: authErr } = await supabase.auth.verifyOtp({
       token_hash: data.token_hash,
-      type: "magiclink",
+      type: "email",
     });
     setVerifyingOtp(false);
     if (authErr) return toast.error(authErr.message);
