@@ -295,7 +295,7 @@ const Partner = () => {
           </div>
         )}
 
-        {session && !profileLoading && !profile && !showForm && !agreedDisclaimer && (
+        {session && !profileLoading && !profile && !showForm && (
           <div className="bg-card border border-border rounded-xl p-6 space-y-4 animate-fade-up">
             <h2 className="font-display text-xl">Before you continue</h2>
             <p className="text-sm text-foreground/70 leading-relaxed">
