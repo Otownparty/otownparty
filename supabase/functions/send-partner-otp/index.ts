@@ -78,10 +78,10 @@ Deno.serve(async (req) => {
     // already-verified sending domain. OTP_FROM_EMAIL can override this when
     // a dedicated mailbox is configured.
     const ticketFromAddress = Deno.env.get("RESEND_FROM_EMAIL") || "Otown Party <onboarding@resend.dev>";
-    const senderMatch = ticketFromAddress.match(/<([^<>@\s]+)@([^<>\s]+)>\s*$/);
+    const senderMatch = ticketFromAddress.match(/(?:<)?[^<>@\s]+@([^<>\s]+?)(?:>)?\s*$/);
     const fromAddress = Deno.env.get("OTP_FROM_EMAIL") || (
       senderMatch
-        ? `Find A Raver <raver@${senderMatch[2]}>`
+        ? `Find A Raver <raver@${senderMatch[1]}>`
         : "Find A Raver <onboarding@resend.dev>"
     );
     const resendRes = await fetch("https://api.resend.com/emails", {
