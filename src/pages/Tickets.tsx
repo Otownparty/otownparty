@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Check, Mail, MapPin, Loader2, Minus, Plus, Sparkles, Repeat, X, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, Mail, MapPin, Loader2, Minus, Plus, Sparkles, Repeat, X, Zap, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -8,13 +8,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
+const db = supabase as any;
+
 const tickets = [
   { name: "Early Bird", badge: "Best Value", price: 4000, features: ["Full event access"], accent: "primary" as const, featured: true, soldOut: false },
   { name: "Regular", price: 5000, features: ["Full event access"], accent: "foreground" as const, featured: false, soldOut: false },
   { name: "VIP Experience", price: 15000, features: ["Full stage access", "Premium visibility", "Priority entry", "Access to merch"], accent: "pink" as const, featured: false, soldOut: false },
 ];
 
-// Set this to true to close online sales and show venue-only message
+// Manual code-level override, still available if ever needed — but normally
+// leave this false and control locks from the staff dashboard instead.
 const ONLINE_SALES_CLOSED = false;
 
 const loadPaystackScript = () => new Promise<void>((resolve, reject) => {
@@ -40,12 +43,29 @@ const Tickets = () => {
   const [buyerPhone, setBuyerPhone] = useState("");
   const [attendeeType, setAttendeeType] = useState<"first-timer" | "returning" | "">("");
 
+  const [locks, setLocks] = useState<Record<string, boolean>>({});
+  const [banner, setBanner] = useState<{ enabled: boolean; message: string }>({ enabled: false, message: "" });
+
+  useEffect(() => {
+    const loadConfig = async () => {
+      const [{ data: lockRows }, { data: bannerRow }] = await Promise.all([
+        db.from("ticket_locks").select("ticket_name, locked"),
+        db.from("ticket_banner").select("enabled, message").eq("id", true).maybeSingle(),
+      ]);
+      const lockMap: Record<string, boolean> = {};
+      (lockRows ?? []).forEach((r: any) => { lockMap[r.ticket_name] = r.locked; });
+      setLocks(lockMap);
+      if (bannerRow) setBanner({ enabled: !!bannerRow.enabled, message: bannerRow.message ?? "" });
+    };
+    loadConfig();
+  }, []);
+
   const getQty = (name: string) => quantities[name] ?? 1;
   const setQty = (name: string, qty: number) =>
     setQuantities((q) => ({ ...q, [name]: Math.max(1, Math.min(10, qty)) }));
 
   const openDetails = (ticketName: string, price: number) => {
-    if (ONLINE_SALES_CLOSED) return;
+    if (ONLINE_SALES_CLOSED || locks[ticketName]) return;
     setActiveTicket({ name: ticketName, quantity: getQty(ticketName), price });
     setDetailsOpen(true);
   };
@@ -150,16 +170,15 @@ const Tickets = () => {
             <p className="text-muted-foreground max-w-2xl mb-8">Sat 17th October 2026 · 6PM–4AM · Oyo Durbar Stadium, Oyo State. Secure your place — tickets are limited.</p>
           </ScrollReveal>
 
-          {/* Venue sales banner */}
-          {ONLINE_SALES_CLOSED && (
+          {/* Admin-controlled banner — set from the staff dashboard (Tickets → Ticket Settings) */}
+          {banner.enabled && banner.message.trim() && (
             <ScrollReveal>
               <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/10 via-pink-400/10 to-sky-400/5 p-6 sm:p-8 mb-10">
-                {/* Animated glow orbs */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
                 <div className="absolute bottom-0 left-0 w-56 h-56 bg-pink-400/15 rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-sky-400/10 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="relative z-10 flex flex-col items-center text-center gap-5">
+                <div className="relative z-10 flex flex-col items-center text-center gap-4">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-background/40 border border-primary/30 backdrop-blur-sm">
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
@@ -170,28 +189,8 @@ const Tickets = () => {
                     </p>
                   </div>
 
-                  <h2 className="font-display font-bold text-3xl sm:text-4xl text-foreground leading-tight">
-                    Come prepared to rave all black in Oyo<span className="text-primary">.</span>
-                  </h2>
-
-                  <p className="max-w-xl text-sm sm:text-base text-muted-foreground leading-relaxed">
-                    Online sales are locked — the rave is too close! Tickets are now sold at the venue only. Pull up early, grab your wristband, and step into the madness.
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-primary/90 text-sm font-semibold tracking-wide">
-                    <span className="flex items-center gap-2">
-                      <Sparkles size={16} className="animate-pulse" />
-                      <span>Oyo Durbar Stadium, Oyo State</span>
-                    </span>
-                    <span className="hidden sm:inline text-border">|</span>
-                    <span className="flex items-center gap-2">
-                      <span>Gates open 6PM · Show runs till 4AM</span>
-                      <Sparkles size={16} className="animate-pulse" />
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-muted-foreground/80 max-w-md">
-                    Come with your QR code if you already bought online. No QR? No problem — buy at the gate and get scanned in.
+                  <p className="max-w-xl text-base sm:text-lg text-foreground font-medium leading-relaxed whitespace-pre-line">
+                    {banner.message}
                   </p>
                 </div>
               </div>
@@ -204,7 +203,8 @@ const Tickets = () => {
                 const qty = getQty(t.name);
                 const total = t.price * qty;
                 const isLoading = loading === t.name;
-                const isDisabled = ONLINE_SALES_CLOSED || (t.soldOut ?? false);
+                const isLocked = ONLINE_SALES_CLOSED || !!locks[t.name];
+                const isDisabled = isLocked || (t.soldOut ?? false);
 
                 return (
                   <ScrollReveal key={t.name}>
@@ -255,7 +255,15 @@ const Tickets = () => {
                               : "bg-foreground/90 text-background hover:brightness-110"
                         }`}
                       >
-                        {isLoading ? <Loader2 className="animate-spin inline" size={16} /> : isDisabled ? "Available at the Venue" : `Buy ${qty} for ₦${total.toLocaleString()}`}
+                        {isLoading ? (
+                          <Loader2 className="animate-spin inline" size={16} />
+                        ) : isLocked ? (
+                          <span className="inline-flex items-center gap-1.5"><Lock size={14} /> Currently Unavailable</span>
+                        ) : (t.soldOut ?? false) ? (
+                          "Sold Out"
+                        ) : (
+                          `Buy ${qty} for ₦${total.toLocaleString()}`
+                        )}
                       </button>
                     </div>
                   </ScrollReveal>
