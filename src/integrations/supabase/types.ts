@@ -35,6 +35,27 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_device_locks: {
+        Row: {
+          created_at: string
+          device_id: string
+          email: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          email: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          email?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       partner_match_reads: {
         Row: {
           last_read_at: string

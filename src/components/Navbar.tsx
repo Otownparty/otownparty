@@ -8,7 +8,7 @@ const navLinks = [
   { label: "Events", path: "/events" },
   { label: "About", path: "/about" },
   { label: "Gallery", path: "/gallery" },
-  { label: "Find a Partner 🥲", path: "/partner" },
+  { label: "Find A Raver👥", path: "/partner" },
   { label: "Tickets", path: "/tickets" },
 ];
 

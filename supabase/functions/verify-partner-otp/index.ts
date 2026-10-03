@@ -1,4 +1,4 @@
-// Verify a Find a Partner sign-in code, lock the device to that email, and
+// Verify a Find A Raver sign-in code, lock the device to that email, and
 // return a magic-link token_hash the client exchanges for a real session.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (lock && lock.email !== email) {
       return json(
-        { error: "This device already has a Find a Partner account. Each device can only be linked to one account." },
+        { error: "This device already has a Find A Raver account. Each device can only be linked to one account." },
         403
       );
     }

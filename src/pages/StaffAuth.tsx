@@ -22,7 +22,7 @@ const TILES = [
   },
   {
     key: "partner",
-    label: "Find a Partner",
+    label: "Find A Raver",
     desc: "Review, approve & manage profiles",
     icon: Heart,
     path: "/staff/partner",
@@ -37,7 +37,7 @@ const TILES = [
   {
     key: "emails",
     label: "Emails",
-    desc: "All ticket buyer & FAP emails",
+    desc: "All ticket buyer & raver emails",
     icon: Mail,
     path: "/staff/emails",
   },

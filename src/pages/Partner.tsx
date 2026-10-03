@@ -268,10 +268,10 @@ const Partner = () => {
       <Navbar />
       <main className="container mx-auto px-4 pt-32 pb-20 max-w-xl">
         <h1 className="font-display text-3xl md:text-4xl mb-2 text-gradient-brand">
-          Find a Partner 🥲
+          Find A Raver👥
         </h1>
         <p className="text-foreground/60 mb-10">
-          Swipe to find someone to come to the party with. Platonic or not — your call.
+          Swipe to find your kind of raver. Friendship, chemistry, or a dance-floor connection — your call.
         </p>
 
         {!session && (
@@ -290,7 +290,7 @@ const Partner = () => {
                   {sendingOtp ? <Loader2 className="animate-spin" size={16} /> : "Send code"}
                 </Button>
                 <p className="text-xs text-foreground/40 text-center">
-                  One account per device — keep it fair for everyone 🙂
+                  One raver account per device — keep it fair for everyone 🙂
                 </p>
               </div>
             ) : (

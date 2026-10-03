@@ -22,7 +22,7 @@ const Inbox = ({
     return (
       <div className="text-center py-16 space-y-4">
         <MessageCircle className="mx-auto text-foreground/30" size={40} />
-        <p className="text-foreground/60">No matches yet. Keep swiping to find your rave partner.</p>
+        <p className="text-foreground/60">No matches yet. Keep swiping to find your raver.</p>
         <button onClick={onDiscover} className="text-primary text-sm font-semibold hover:underline">Start swiping</button>
       </div>
     );
