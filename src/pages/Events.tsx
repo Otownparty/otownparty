@@ -115,7 +115,7 @@ const Events = () => {
                   to="/tickets"
                   className="inline-flex items-center justify-center px-8 py-3.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:brightness-110 transition"
                 >
-                  Get Tickets Now
+                  Get Tickets Now 🎫
                 </Link>
               </div>
             </div>
