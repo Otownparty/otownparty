@@ -73,10 +73,10 @@ const Index = () => {
                 to="/tickets"
                 className="px-8 py-3.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:brightness-110 transition-all"
               >
-                Get Tickets Now
+                Get Tickets Now 🎫
               </Link>
               <Link to="/partner" className="px-8 py-3.5 rounded-lg border border-foreground/30 text-foreground font-semibold text-sm hover:border-primary hover:text-primary transition-all">
-                Find A Partner
+                Find A Raver👥
               </Link>
             </div>
           </div>

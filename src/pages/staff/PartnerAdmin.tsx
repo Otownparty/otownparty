@@ -59,7 +59,7 @@ const PartnerAdmin = () => {
           </button>
         </div>
 
-        <h1 className="font-display text-2xl text-foreground mb-6">Find a Partner — Admin</h1>
+        <h1 className="font-display text-2xl text-foreground mb-6">Find A Raver — Admin</h1>
 
         <PartnerAdminPanel />
       </div>

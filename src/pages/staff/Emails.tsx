@@ -19,7 +19,7 @@ type Row = {
 const FILTERS: { value: "all" | Source; label: string }[] = [
   { value: "all", label: "All" },
   { value: "ticket", label: "Ticket buyers" },
-  { value: "fap", label: "Find a Partner" },
+  { value: "fap", label: "Find A Raver" },
 ];
 
 const sourceLabel: Record<Source, string> = {
@@ -165,7 +165,7 @@ const Emails = () => {
 
         <h1 className="font-display text-2xl text-foreground mb-1">Emails</h1>
         <p className="text-sm text-muted-foreground mb-6">
-          {rows.length} unique email{rows.length === 1 ? "" : "s"} across ticket buyers and Find a Partner sign-ups.
+          {rows.length} unique email{rows.length === 1 ? "" : "s"} across ticket buyers and Find A Raver sign-ups.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-4">
