@@ -325,7 +325,12 @@ const Partner = () => {
           </div>
         )}
 
-        {session && !profileLoading && !profile && !showForm && !agreedDisclaimer && (
+        {/* FIX: this box used to also require `!agreedDisclaimer` to show,
+            which made it (and its own Continue button) vanish the instant
+            the checkbox was checked — before the user could ever tap
+            Continue. The checkbox should only gate the button, not the
+            whole box's visibility. */}
+        {session && !profileLoading && !profile && !showForm && (
           <div className="bg-card border border-border rounded-xl p-6 space-y-4 animate-fade-up">
             <h2 className="font-display text-xl">Before you continue</h2>
             <p className="text-sm text-foreground/70 leading-relaxed">
