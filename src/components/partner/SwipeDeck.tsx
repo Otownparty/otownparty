@@ -13,6 +13,7 @@ type Candidate = {
   user_id: string;
   display_name: string;
   age: number;
+  gender: string;
   bio: string;
   photo_urls: string[];
 };
@@ -32,14 +33,12 @@ const SwipeDeck = ({ currentUserId }: { currentUserId: string }) => {
   const loadCandidates = async () => {
     setLoading(true);
     try {
-      const { data: swiped } = await db
-        .from("partner_swipes")
-        .select("swiped_id")
-        .eq("swiper_id", currentUserId);
-      const { data: blocked } = await db
-        .from("partner_blocks")
-        .select("blocked_id, blocker_id")
-        .or(`blocker_id.eq.${currentUserId},blocked_id.eq.${currentUserId}`);
+      const [{ data: swiped }, { data: blocked }, { data: myProfile }] = await Promise.all([
+        db.from("partner_swipes").select("swiped_id").eq("swiper_id", currentUserId),
+        db.from("partner_blocks").select("blocked_id, blocker_id")
+          .or(`blocker_id.eq.${currentUserId},blocked_id.eq.${currentUserId}`),
+        db.from("partner_profiles").select("looking_for").eq("user_id", currentUserId).maybeSingle(),
+      ]);
 
       const excludeIds = new Set<string>([
         currentUserId,
@@ -47,14 +46,24 @@ const SwipeDeck = ({ currentUserId }: { currentUserId: string }) => {
         ...(blocked ?? []).flatMap((b: any) => [b.blocker_id, b.blocked_id]),
       ]);
 
+      // Only show people whose gender matches what this user selected under
+      // "Looking for" on their own profile — unless they chose "Anyone".
+      const myLookingFor: string[] = myProfile?.looking_for ?? [];
+      const wantsAnyone = myLookingFor.length === 0 || myLookingFor.includes("Anyone");
+
       const { data, error } = await db
         .from("partner_profiles")
-        .select("id, user_id, display_name, age, bio, photo_urls")
+        .select("id, user_id, display_name, age, gender, bio, photo_urls")
         .eq("status", "approved")
         .limit(50);
       if (error) throw error;
 
-      setCandidates((data ?? []).filter((c: Candidate) => !excludeIds.has(c.user_id)));
+      setCandidates(
+        (data ?? []).filter(
+          (c: Candidate) =>
+            !excludeIds.has(c.user_id) && (wantsAnyone || myLookingFor.includes(c.gender))
+        )
+      );
     } catch (err: any) {
       toast.error("Couldn't load profiles");
       console.error(err);
