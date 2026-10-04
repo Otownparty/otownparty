@@ -20,7 +20,13 @@ const ICEBREAKERS = [
   "First drink's on who? 😄",
 ];
 
-const fmt = (secs: number) => `${String(Math.floor(secs / 60)).padStart(2, "0")}:${String(secs % 60).padStart(2, "0")}`;
+const fmt = (secs: number) => {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  const p = (n: number) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${p(m)}:${p(s)}` : `${p(m)}:${p(s)}`;
+};
 
 const ChatPanel = ({
   match, currentUserId, minimized, unread, onMinimize, onRestore, onClose, onRead,
@@ -30,27 +36,45 @@ const ChatPanel = ({
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
+  const [expiresAt, setExpiresAt] = useState<string | null>(match.chat_expires_at);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [showReport, setShowReport] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const otherUserId = match.user_a === currentUserId ? match.user_b : match.user_a;
-  const expired = secondsLeft <= 0;
+  const started = !!expiresAt;
+  const expired = started && secondsLeft <= 0;
   const name = match.other?.display_name ?? "Raver";
   const photo = match.other?.photo_urls?.[0];
+  const iSent = messages.some((m) => m.sender_id === currentUserId);
+  const theySent = messages.some((m) => m.sender_id === otherUserId);
+
+  useEffect(() => { setExpiresAt(match.chat_expires_at); }, [match.chat_expires_at]);
 
   useEffect(() => {
-    const tick = () => setSecondsLeft(Math.max(0, Math.floor((new Date(match.chat_expires_at).getTime() - Date.now()) / 1000)));
+    if (!expiresAt) return;
+    const tick = () => setSecondsLeft(Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000)));
     tick();
     const i = setInterval(tick, 1000);
     return () => clearInterval(i);
-  }, [match.chat_expires_at]);
+  }, [expiresAt]);
+
+  const refreshExpiry = async () => {
+    const { data } = await db.from("partner_matches").select("chat_expires_at").eq("id", match.id).maybeSingle();
+    if (data) setExpiresAt(data.chat_expires_at);
+  };
 
   useEffect(() => {
     db.from("partner_messages").select("*").eq("match_id", match.id).order("created_at", { ascending: true })
       .then(({ data }: any) => setMessages(data ?? []));
+    refreshExpiry();
     const ch = supabase.channel(`chat-${match.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "partner_messages", filter: `match_id=eq.${match.id}` },
-        (p: any) => setMessages((m) => (m.some((x) => x.id === p.new.id) ? m : [...m, p.new])))
+        (p: any) => {
+          setMessages((m) => (m.some((x) => x.id === p.new.id) ? m : [...m, p.new]));
+          refreshExpiry();
+        })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "partner_matches", filter: `id=eq.${match.id}` },
+        (p: any) => setExpiresAt(p.new.chat_expires_at))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [match.id]);
@@ -68,7 +92,20 @@ const ChatPanel = ({
       .select().single();
     if (error) return toast.error("Message didn't send — chat may have ended");
     setMessages((m) => (m.some((x) => x.id === data.id) ? m : [...m, data]));
+    refreshExpiry();
+    // Email the other person — never block or error the chat if it fails.
+    supabase.functions.invoke("notify-partner-message", {
+      body: { message_id: data.id, origin: window.location.origin },
+    }).catch(() => {});
   };
+
+  const banner = started
+    ? null
+    : theySent && !iSent
+      ? `⏳ Once you reply, you two have 24 hours to chat.`
+      : iSent
+        ? `⏳ The 24-hour clock starts when ${name} replies. We've emailed them.`
+        : `👋 Say hi! Once ${name} replies, you two have 24 hours to chat.`;
 
   if (minimized) {
     return (
@@ -76,7 +113,7 @@ const ChatPanel = ({
         className="fixed bottom-5 right-5 z-50 flex items-center gap-2 pl-1 pr-4 py-1 rounded-full bg-card border border-primary/40 shadow-lg animate-fade-up hover:border-primary">
         <img src={photo} alt="" className="w-10 h-10 rounded-full object-cover" />
         <span className="text-sm font-semibold">{name}</span>
-        {!expired && <span className="text-xs font-mono text-foreground/50">{fmt(secondsLeft)}</span>}
+        {started && !expired && <span className="text-xs font-mono text-foreground/50">{fmt(secondsLeft)}</span>}
         {unread > 0 && <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">{unread}</span>}
       </button>
     );
@@ -89,14 +126,18 @@ const ChatPanel = ({
         <img src={photo} alt="" className="w-10 h-10 rounded-full object-cover" />
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate">{name}{match.other?.age ? `, ${match.other.age}` : ""}</p>
-          <p className={`text-xs font-mono ${expired ? "text-destructive" : secondsLeft < 60 ? "text-secondary" : "text-foreground/50"}`}>
-            {expired ? "Chat ended" : `Chat ends in ${fmt(secondsLeft)}`}
+          <p className={`text-xs font-mono ${expired ? "text-destructive" : started && secondsLeft < 3600 ? "text-secondary" : "text-foreground/50"}`}>
+            {!started ? "24h chat · starts on reply" : expired ? "Chat ended" : `Chat ends in ${fmt(secondsLeft)}`}
           </p>
         </div>
         <button onClick={() => setShowReport(true)} className="p-1.5 text-foreground/40 hover:text-primary" aria-label="Report"><Flag size={16} /></button>
         <button onClick={onMinimize} className="p-1.5 text-foreground/60 hover:text-primary" aria-label="Minimize"><Minus size={18} /></button>
         <button onClick={onClose} className="p-1.5 text-foreground/60 hover:text-primary hidden sm:block" aria-label="Close"><X size={18} /></button>
       </div>
+
+      {banner && (
+        <div className="px-3 py-2 text-xs text-center bg-primary/10 text-primary border-b border-primary/30">{banner}</div>
+      )}
 
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
         {messages.length === 0 && (

@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.start_partner_chat_timer() FROM PUBLIC, anon, authenticated;
