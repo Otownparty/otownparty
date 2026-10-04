@@ -54,7 +54,7 @@ const Inbox = ({
           <p className="text-xs uppercase tracking-widest text-foreground/50 mb-2">Messages</p>
           <div className="divide-y divide-border border border-border rounded-xl overflow-hidden bg-card">
             {convos.map((m) => {
-              const expired = new Date(m.chat_expires_at).getTime() < Date.now();
+              const expired = !!m.chat_expires_at && new Date(m.chat_expires_at).getTime() < Date.now();
               const mine = m.lastMessage?.sender_id === currentUserId;
               return (
                 <button key={m.id} onClick={() => onOpen(m)}

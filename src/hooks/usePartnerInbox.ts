@@ -7,7 +7,7 @@ export type InboxMatch = {
   id: string;
   user_a: string;
   user_b: string;
-  chat_expires_at: string;
+  chat_expires_at: string | null;
   created_at: string;
   other: { user_id: string; display_name: string; age: number; photo_urls: string[]; bio: string } | null;
   lastMessage: { content: string; sender_id: string; created_at: string } | null;
