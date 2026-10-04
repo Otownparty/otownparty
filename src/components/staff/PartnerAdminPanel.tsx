@@ -67,8 +67,23 @@ const PartnerAdminPanel = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectBox, setShowRejectBox] = useState(false);
 
+  // Emails every approved raver who hasn't been told yet (also catches up
+  // anyone approved before this email existed). Never blocks the panel.
+  const sendApprovalEmails = async (silent = true) => {
+    const { data, error } = await supabase.functions.invoke("notify-partner-approved", {
+      body: { origin: window.location.origin },
+    });
+    if (!silent) {
+      if (error || data?.error) toast.error("Couldn't send approval emails");
+      else toast.success(data.sent ? `Approval email sent to ${data.sent}` : "Everyone approved has been emailed");
+    } else if (data?.sent) {
+      toast.success(`Approval email sent to ${data.sent} raver${data.sent > 1 ? "s" : ""}`);
+    }
+  };
+
   useEffect(() => {
     load();
+    sendApprovalEmails();
   }, []);
 
   const load = async () => {
@@ -105,6 +120,7 @@ const PartnerAdminPanel = () => {
     setProfiles((p) => p.map((x) => (x.id === id ? { ...x, status, ...extra } : x)));
     setSelected((s) => (s && s.id === id ? { ...s, status, ...extra } : s));
     toast.success("Updated");
+    if (status === "approved") sendApprovalEmails();
   };
 
   const deleteProfile = async (p: Profile) => {

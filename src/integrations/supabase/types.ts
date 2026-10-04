@@ -165,6 +165,7 @@ export type Database = {
       partner_profiles: {
         Row: {
           age: number | null
+          approval_emailed_at: string | null
           bio: string | null
           created_at: string
           display_name: string | null
@@ -178,6 +179,7 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          approval_emailed_at?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
@@ -191,6 +193,7 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          approval_emailed_at?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
