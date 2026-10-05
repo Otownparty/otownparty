@@ -58,6 +58,14 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    const { data: lockRow } = await supabase
+      .from("ticket_locks").select("locked").eq("ticket_name", ticketType).maybeSingle();
+    if (lockRow?.locked) {
+      return new Response(JSON.stringify({ error: `${ticketType} tickets are currently unavailable` }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { error } = await supabase.from("payment_intents").insert({
       reference,
       ticket_type: ticketType,

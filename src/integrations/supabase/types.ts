@@ -312,6 +312,48 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_banner: {
+        Row: {
+          enabled: boolean
+          id: boolean
+          message: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          id?: boolean
+          message?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: boolean
+          message?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ticket_locks: {
+        Row: {
+          locked: boolean
+          ticket_name: string
+          updated_at: string
+        }
+        Insert: {
+          locked?: boolean
+          ticket_name: string
+          updated_at?: string
+        }
+        Update: {
+          locked?: boolean
+          ticket_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ticket_purchases: {
         Row: {
           amount: number

@@ -1,3 +1,4 @@
+import TicketBanner from "@/components/TicketBanner";
 import { useEffect, useState } from "react";
 import { Check, Mail, MapPin, Loader2, Minus, Plus, Sparkles, Repeat, X, Zap, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 const db = supabase as any;
 
 const tickets = [
-  { name: "Early Bird", badge: "Best Value", price: 4000, features: ["Full event access"], accent: "primary" as const, featured: true, soldOut: true },
+  { name: "Early Bird", badge: "Best Value", price: 4000, features: ["Full event access"], accent: "primary" as const, featured: true, soldOut: false },
   { name: "Regular", price: 5000, features: ["Full event access"], accent: "foreground" as const, featured: false, soldOut: false },
   { name: "VIP Experience", price: 15000, features: ["Full stage access", "Premium visibility", "Priority entry", "Access to merch"], accent: "pink" as const, featured: false, soldOut: false },
 ];
@@ -44,18 +45,18 @@ const Tickets = () => {
   const [attendeeType, setAttendeeType] = useState<"first-timer" | "returning" | "">("");
 
   const [locks, setLocks] = useState<Record<string, boolean>>({});
-  const [banner, setBanner] = useState<{ enabled: boolean; message: string }>({ enabled: false, message: "" });
+  const [banner, setBanner] = useState<{ enabled: boolean; title: string; message: string }>({ enabled: false, title: "", message: "" });
 
   useEffect(() => {
     const loadConfig = async () => {
       const [{ data: lockRows }, { data: bannerRow }] = await Promise.all([
         db.from("ticket_locks").select("ticket_name, locked"),
-        db.from("ticket_banner").select("enabled, message").eq("id", true).maybeSingle(),
+        db.from("ticket_banner").select("enabled, title, message").eq("id", true).maybeSingle(),
       ]);
       const lockMap: Record<string, boolean> = {};
       (lockRows ?? []).forEach((r: any) => { lockMap[r.ticket_name] = r.locked; });
       setLocks(lockMap);
-      if (bannerRow) setBanner({ enabled: !!bannerRow.enabled, message: bannerRow.message ?? "" });
+      if (bannerRow) setBanner({ enabled: !!bannerRow.enabled, title: bannerRow.title ?? "", message: bannerRow.message ?? "" });
     };
     loadConfig();
   }, []);
@@ -171,29 +172,9 @@ const Tickets = () => {
           </ScrollReveal>
 
           {/* Admin-controlled banner — set from the staff dashboard (Tickets → Ticket Settings) */}
-          {banner.enabled && banner.message.trim() && (
+          {banner.enabled && (banner.title.trim() || banner.message.trim()) && (
             <ScrollReveal>
-              <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/10 via-pink-400/10 to-sky-400/5 p-6 sm:p-8 mb-10">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
-                <div className="absolute bottom-0 left-0 w-56 h-56 bg-pink-400/15 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-sky-400/10 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="relative z-10 flex flex-col items-center text-center gap-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-background/40 border border-primary/30 backdrop-blur-sm">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-                    </span>
-                    <p className="text-primary text-[10px] font-bold uppercase tracking-[0.25em]">
-                      Tonight We Rave
-                    </p>
-                  </div>
-
-                  <p className="max-w-xl text-base sm:text-lg text-foreground font-medium leading-relaxed whitespace-pre-line">
-                    {banner.message}
-                  </p>
-                </div>
-              </div>
+              <TicketBanner title={banner.title} message={banner.message} />
             </ScrollReveal>
           )}
 
