@@ -35,9 +35,14 @@ Deno.serve(async (req) => {
 
     let sent = 0; const failed: string[] = [];
     for (const p of profiles ?? []) {
+      // Claim the row first so overlapping calls never email the same person twice.
+      const { data: claimed } = await admin.from("partner_profiles")
+        .update({ approval_emailed_at: new Date().toISOString() })
+        .eq("id", p.id).is("approval_emailed_at", null).select("id");
+      if (!claimed?.length) continue;
       const { data: u } = await admin.auth.admin.getUserById(p.user_id);
       const to = u?.user?.email;
-      if (!to) { failed.push(p.id); continue; }
+      if (!to) { failed.push(p.id); continue; } // left claimed: no email to send to
       const name = esc(p.display_name ?? "Raver");
       const html = `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#0a0a0a;">
@@ -59,8 +64,8 @@ Deno.serve(async (req) => {
       if (!res.ok) {
         console.error("Resend error:", p.id, res.status, await res.text());
         failed.push(p.id);
+        await admin.from("partner_profiles").update({ approval_emailed_at: null }).eq("id", p.id);
       } else {
-        await admin.from("partner_profiles").update({ approval_emailed_at: new Date().toISOString() }).eq("id", p.id);
         sent++;
       }
       await new Promise((r) => setTimeout(r, 600)); // stay under Resend rate limit
