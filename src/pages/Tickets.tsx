@@ -1,3 +1,4 @@
+import TicketBanner from "@/components/TicketBanner";
 import { useEffect, useState } from "react";
 import { Check, Mail, MapPin, Loader2, Minus, Plus, Sparkles, Repeat, X, Zap, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";

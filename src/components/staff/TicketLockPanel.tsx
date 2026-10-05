@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Lock, Sparkles } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
+import TicketBanner from "@/components/TicketBanner";
 
 const db = supabase as any;
 
@@ -17,6 +19,7 @@ const TicketLockPanel = () => {
   const [savingLock, setSavingLock] = useState<string | null>(null);
 
   const [bannerEnabled, setBannerEnabled] = useState(false);
+  const [bannerTitle, setBannerTitle] = useState("");
   const [bannerMessage, setBannerMessage] = useState("");
   const [savingBanner, setSavingBanner] = useState(false);
 
@@ -28,7 +31,7 @@ const TicketLockPanel = () => {
     setLoading(true);
     const [{ data: lockRows, error: lErr }, { data: bannerRow, error: bErr }] = await Promise.all([
       db.from("ticket_locks").select("ticket_name, locked"),
-      db.from("ticket_banner").select("enabled, message").eq("id", true).maybeSingle(),
+      db.from("ticket_banner").select("enabled, title, message").eq("id", true).maybeSingle(),
     ]);
     if (lErr) toast.error("Couldn't load ticket locks");
     if (bErr) toast.error("Couldn't load banner");
@@ -40,6 +43,7 @@ const TicketLockPanel = () => {
 
     if (bannerRow) {
       setBannerEnabled(!!bannerRow.enabled);
+      setBannerTitle(bannerRow.title ?? "");
       setBannerMessage(bannerRow.message ?? "");
     }
     setLoading(false);
@@ -57,13 +61,19 @@ const TicketLockPanel = () => {
   };
 
   const saveBanner = async () => {
+    if (bannerEnabled && !bannerTitle.trim() && !bannerMessage.trim()) {
+      return toast.error("Add a heading or message before switching the banner on");
+    }
     setSavingBanner(true);
     const { error } = await db
       .from("ticket_banner")
-      .upsert({ id: true, enabled: bannerEnabled, message: bannerMessage.trim() }, { onConflict: "id" });
+      .upsert(
+        { id: true, enabled: bannerEnabled, title: bannerTitle.trim(), message: bannerMessage.trim() },
+        { onConflict: "id" }
+      );
     setSavingBanner(false);
     if (error) return toast.error(error.message);
-    toast.success("Banner saved");
+    toast.success(bannerEnabled ? "Banner is live on the tickets page" : "Banner saved (hidden)");
   };
 
   const lockAll = async () => {
@@ -137,6 +147,11 @@ const TicketLockPanel = () => {
             </div>
             <Switch checked={bannerEnabled} onCheckedChange={setBannerEnabled} />
           </div>
+          <Input
+            placeholder="Heading, e.g. Come prepared to rave all black in Oyo"
+            value={bannerTitle}
+            onChange={(e) => setBannerTitle(e.target.value)}
+          />
           <Textarea
             placeholder="e.g. Online sales are closed — tickets available at the gate only!"
             value={bannerMessage}
@@ -144,16 +159,12 @@ const TicketLockPanel = () => {
             rows={3}
           />
 
-          {bannerEnabled && bannerMessage.trim() && (
+          {(bannerTitle.trim() || bannerMessage.trim()) && (
             <div>
-              <p className="text-xs text-muted-foreground mb-2">Live preview:</p>
-              <div className="relative overflow-hidden rounded-xl border border-primary/40 bg-gradient-to-br from-primary/10 via-pink-400/10 to-sky-400/5 p-5 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-background/40 border border-primary/30 backdrop-blur-sm mb-3">
-                  <Sparkles size={12} className="text-primary" />
-                  <p className="text-primary text-[10px] font-bold uppercase tracking-[0.25em]">Tonight We Rave</p>
-                </div>
-                <p className="text-sm text-foreground font-medium whitespace-pre-line">{bannerMessage}</p>
-              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Live preview {bannerEnabled ? "" : "(hidden until you switch it on and save)"}:
+              </p>
+              <TicketBanner title={bannerTitle} message={bannerMessage} compact />
             </div>
           )}
 
