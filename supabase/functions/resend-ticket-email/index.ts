@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
     if (tErr) throw tErr;
 
     // Paid orders where tickets were never created — finish them through the normal claim step.
-    let iq = admin.from("payment_intents").select("reference, buyer_name, edition").ilike("buyer_email", email).eq("status", "verified");
+    let iq = admin.from("payment_intents").select("reference, buyer_name, edition").ilike("buyer_email", email).in("status", ["verified", "claimed"]);
     if (scope === "current") iq = iq.eq("edition", CURRENT_EDITION);
     const { data: intents } = await iq;
     const haveRefs = new Set((tickets ?? []).map((t) => t.payment_reference));
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       });
       const d = await r.json().catch(() => ({}));
       const ok = r.ok && (d.emailSent !== false) && !d.error;
-      results.push({ reference: m.reference, ok, count: d.ticketCount ?? 0, error: ok ? undefined : (d.emailError || d.error || `Failed (${r.status})`) });
+      results.push({ reference: m.reference, ok, count: d.quantity ?? 0, error: ok ? undefined : (d.emailError || d.error || `Failed (${r.status})`) });
     }
 
     const groups = new Map<string, any[]>();
