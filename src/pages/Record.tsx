@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TicketLockPanel from "@/components/staff/TicketLockPanel";
+import ResendQrPanel from "@/components/staff/ResendQrPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -744,6 +745,10 @@ See you on the dancefloor tonight.
                 <Lock size={16} />
                 Ticket Settings
               </TabsTrigger>
+              <TabsTrigger value="resend" className="gap-2">
+                <Mail size={16} />
+                Resend QR
+              </TabsTrigger>
             </TabsList>
 
             {/* OVERVIEW TAB (Original Functionality) */}
@@ -1221,6 +1226,10 @@ See you on the dancefloor tonight.
 
             <TabsContent value="settings">
               <TicketLockPanel />
+            </TabsContent>
+
+            <TabsContent value="resend">
+              <ResendQrPanel />
             </TabsContent>
           </Tabs>
         )}
