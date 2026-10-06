@@ -45,6 +45,11 @@ import {
 } from "@/components/ui/dialog";
 
 const CURRENT_EDITION = "Otown Party 15.0 - Afro All Black Edition";
+// Derived once from CURRENT_EDITION above so the header/History labels
+// always match it automatically — bump CURRENT_EDITION (and this date) for
+// a new edition and every display updates with it, nothing else to touch.
+const [CURRENT_EDITION_NUMBER, CURRENT_EDITION_NAME] = CURRENT_EDITION.split(" - ");
+const CURRENT_EDITION_DATE = "October 2026";
 const PAST_EDITIONS: { value: string; label: string; date: string }[] = [
   {
     value: "Otown Party 14.0 - Ede Edition",
@@ -666,7 +671,7 @@ See you on the dancefloor tonight.
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
             <p className="text-primary text-xs font-semibold uppercase tracking-widest mb-1">
-              {isViewingHistory ? `History · ${currentEditionLabel}` : "Otown Party 12.0 · Current Edition"}
+              {isViewingHistory ? `History · ${currentEditionLabel}` : `${CURRENT_EDITION_NUMBER} · Current Edition`}
             </p>
             <h1 className="font-display font-bold text-2xl text-foreground">
               {isViewingHistory ? "Past Edition Records" : "Ticket Records"}
@@ -731,23 +736,23 @@ See you on the dancefloor tonight.
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-8">
-              <TabsTrigger value="overview" className="gap-2">
-                <Ticket size={16} />
-                Ticket Purchases
+            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8 gap-1">
+              <TabsTrigger value="overview" className="gap-1.5 px-2 text-xs sm:text-sm">
+                <Ticket size={15} />
+                <span className="hidden sm:inline">Ticket </span>Purchases
               </TabsTrigger>
-              <TabsTrigger value="vendors" className="gap-2">
-                <Store size={16} />
-                Vendors
-                <span className="ml-1 text-xs text-muted-foreground">({vendors.length})</span>
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="gap-2">
-                <Lock size={16} />
-                Ticket Settings
-              </TabsTrigger>
-              <TabsTrigger value="resend" className="gap-2">
-                <Mail size={16} />
+              <TabsTrigger value="resend" className="gap-1.5 px-2 text-xs sm:text-sm">
+                <Mail size={15} />
                 Resend QR
+              </TabsTrigger>
+              <TabsTrigger value="vendors" className="gap-1.5 px-2 text-xs sm:text-sm">
+                <Store size={15} />
+                Vendors
+                <span className="text-muted-foreground">({filteredVendors.length})</span>
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-1.5 px-2 text-xs sm:text-sm">
+                <Lock size={15} />
+                <span className="hidden sm:inline">Ticket </span>Settings
               </TabsTrigger>
             </TabsList>
 
@@ -1289,8 +1294,8 @@ See you on the dancefloor tonight.
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
                   Current
                 </p>
-                <p className="font-display font-bold text-foreground">Otown Party 15.0</p>
-                <p className="text-xs text-muted-foreground">Afro All Black Edition · October 2026</p>
+                <p className="font-display font-bold text-foreground">{CURRENT_EDITION_NUMBER}</p>
+                <p className="text-xs text-muted-foreground">{CURRENT_EDITION_NAME} · {CURRENT_EDITION_DATE}</p>
               </button>
               {PAST_EDITIONS.map((ed) => {
                 const ticketCount = rawTickets.filter(
