@@ -211,6 +211,18 @@ const Vendor = () => {
       });
 
       handler.openIframe();
+
+      // Paystack's payment window should appear almost instantly. If it
+      // still hasn't shown up after 10s, something blocked it (weak
+      // connection, VPN, firewall) — reset the button instead of leaving
+      // it spinning forever with no way out.
+      setTimeout(() => {
+        const opened = document.querySelector('iframe[src*="paystack.co"]');
+        if (!opened) {
+          setLoading(false);
+          toast.error("The payment window didn't open. Check your connection (try switching networks or turning off any VPN) and try again.");
+        }
+      }, 10000);
     } catch (err) {
       console.error(err);
       toast.error((err as Error).message || "Could not start payment");
