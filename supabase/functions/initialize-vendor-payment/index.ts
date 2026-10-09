@@ -14,6 +14,7 @@ const VENDOR_OPTIONS: Record<string, { category: string; label: string; amount: 
   popcorn_parfait: { category: "Consumable", label: "Popcorn and Parfait", amount: 50000_00 },
   pepper_soup: { category: "Consumable", label: "Pepper Soup", amount: 40000_00 },
   suya: { category: "Consumable", label: "Suya", amount: 30000_00 },
+  asun: { category: "Consumable", label: "Asun", amount: 30000_00 },
   snail_peppered_chicken: { category: "Consumable", label: "Snail", amount: 40000_00 },
   coffee: { category: "Consumable", label: "Coffee", amount: 40000_00 },
   shisha: { category: "Consumable", label: "Shisha", amount: 50000_00 },
