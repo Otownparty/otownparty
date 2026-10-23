@@ -1,5 +1,6 @@
 import { useEventEdition } from "@/hooks/useEventEdition";
 import { editionKey } from "@/lib/eventEdition";
+import { vendorsForEdition } from "@/lib/vendor-edition";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -412,7 +413,7 @@ Let's Rave!
         const { error } = await supabase
           .from("vendor_applications")
           .delete()
-          .not("id", "is", null);
+          .eq("edition", selectedEdition);
         if (error) throw error;
         toast.success("Vendor records cleared");
       }
@@ -603,8 +604,8 @@ Let's Rave!
       )
     );
 
-  const filteredVendors = vendors
-    .filter((v) => (v.edition || CURRENT_EDITION) === selectedEdition)
+  const editionVendors = vendorsForEdition(vendors, selectedEdition);
+  const filteredVendors = editionVendors
     .filter((v) =>
       [v.brand_name, v.email, v.reference, v.business_category, v.sub_category, v.instagram].some((field) =>
         field?.toLowerCase().includes(vendorSearch.toLowerCase())
@@ -1044,7 +1045,7 @@ Let's Rave!
             <TabsContent value="vendors">
               {/* Vendor Summary Cards */}
               {(() => {
-                const paidVendors = vendors.filter((v) => v.status === "paid");
+                const paidVendors = editionVendors.filter((v) => v.status === "paid");
                 const totalVendors = paidVendors.length;
                 const scannedVendors = paidVendors.filter((v) => v.scanned).length;
                 const remaining = totalVendors - scannedVendors;
@@ -1211,7 +1212,7 @@ Let's Rave!
                 {confirmClear === "tickets"
                   ? "every ticket purchase, issued ticket, and payment intent"
                   : "every vendor application"}{" "}
-                from the database. This action cannot be undone.
+                {confirmClear === "vendors" ? `for ${selectedEdition}` : "from the database"}. This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -1261,9 +1262,7 @@ Let's Rave!
                 const ticketCount = rawTickets.filter(
                   (t) => (t.edition || CURRENT_EDITION) === ed.value
                 ).length;
-                const vendorCount = vendors.filter(
-                  (v) => (v.edition || CURRENT_EDITION) === ed.value
-                ).length;
+                const vendorCount = vendorsForEdition(vendors, ed.value).length;
                 return (
                   <button
                     key={ed.value}

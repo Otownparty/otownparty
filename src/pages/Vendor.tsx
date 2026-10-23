@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { useNavigate } from "react-router-dom";
 import { useEventEdition } from "@/hooks/useEventEdition";
+import { editionKey } from "@/lib/eventEdition";
 
 // PaystackPop is declared globally in src/types/paystack.d.ts
 
@@ -49,6 +50,7 @@ const NON_CONSUMABLE_OPTIONS: CategoryOption[] = [
 
 const Vendor = () => {
   const { event: nextEdition } = useEventEdition();
+  const currentEdition = editionKey(nextEdition);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
@@ -74,31 +76,24 @@ const Vendor = () => {
 
   // Fetch current spot counts from database
   useEffect(() => {
+    let alive = true;
     const fetchSpots = async () => {
       setSpotsLoading(true);
+      setSpotCounts({});
       try {
-        const { data, error } = await supabase
-          .from("vendor_applications")
-          .select("sub_category_key")
-          .eq("status", "paid");
-
+        const { data, error } = await supabase.functions.invoke("vendor-availability");
         if (error) throw error;
-
-        const counts: Record<string, number> = {};
-        data?.forEach((row) => {
-          if (row.sub_category_key) {
-            counts[row.sub_category_key] = (counts[row.sub_category_key] || 0) + 1;
-          }
-        });
-        setSpotCounts(counts);
+        if (data?.error) throw new Error(data.error);
+        if (alive && data?.edition === currentEdition) setSpotCounts(data.counts ?? {});
       } catch (err) {
         console.error("Failed to fetch spots:", err);
       } finally {
-        setSpotsLoading(false);
+        if (alive) setSpotsLoading(false);
       }
     };
-    fetchSpots();
-  }, []);
+    void fetchSpots();
+    return () => { alive = false; };
+  }, [currentEdition]);
 
   const getSelectedOption = (): CategoryOption | null => {
     const all = [...CONSUMABLE_OPTIONS, ...NON_CONSUMABLE_OPTIONS];
