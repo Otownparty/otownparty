@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
 import aboutImg from "@/assets/about-party.jpg";
-import { editions } from "@/data/editions";
+import { useEventEdition } from "@/hooks/useEventEdition";
 const values = [
   { num: "01", title: "Culture First", desc: "Every decision honours African culture — in sound, style, and space." },
   { num: "02", title: "Community", desc: "Building belonging where every raver feels seen and celebrated." },
@@ -17,6 +17,7 @@ const values = [
   { num: "11", title: "Safe Space for All", desc: "O'town Party promotes respect, inclusivity, and positive vibes. Everyone deserves to feel safe and enjoy the moment." },
 ];
 const About = () => {
+  const { editions } = useEventEdition();
   return (
     <>
       <Navbar />

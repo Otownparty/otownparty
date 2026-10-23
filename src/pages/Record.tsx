@@ -1,3 +1,6 @@
+import { useEventEdition } from "@/hooks/useEventEdition";
+import { editionKey } from "@/lib/eventEdition";
+import EditionPanel from "@/components/staff/EditionPanel";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -43,35 +46,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-
-const CURRENT_EDITION = "Otown Party 15.0 - Afro All Black Edition";
-// Derived once from CURRENT_EDITION above so the header/History labels
-// always match it automatically — bump CURRENT_EDITION (and this date) for
-// a new edition and every display updates with it, nothing else to touch.
-const [CURRENT_EDITION_NUMBER, CURRENT_EDITION_NAME] = CURRENT_EDITION.split(" - ");
-const CURRENT_EDITION_DATE = "October 2026";
-const PAST_EDITIONS: { value: string; label: string; date: string }[] = [
-  {
-    value: "Otown Party 14.0 - Ede Edition",
-    label: "Otown Party 14.0",
-    date: "Ede Edition · September 2026",
-  },
-  {
-    value: "Otown Party 13.0 - Faaji Extra",
-    label: "Otown Party 13.0",
-    date: "Faaji Extra · August 2026",
-  },
-  {
-    value: "Otown Party 12.0 - Iseyin Edition",
-    label: "Otown Party 12.0",
-    date: "Iseyin Edition · June 2026",
-  },
-  {
-    value: "Otown Party 11.0 - Glow in the 90s",
-    label: "Otown Party 11.0",
-    date: "Glow in the 90s · May 2026",
-  },
-];
 
 type TicketStats = {
   ticketType: string;
@@ -166,6 +140,12 @@ type StaffAccount = {
 
 
 const Record = () => {
+  const { event, editions } = useEventEdition();
+  const CURRENT_EDITION = editionKey(event);
+  const CURRENT_EDITION_NUMBER = `Otown Party ${event.num}.0`;
+  const CURRENT_EDITION_NAME = event.title;
+  const CURRENT_EDITION_DATE = event.shortDate;
+  const PAST_EDITIONS = editions.map(ed => ({ value: `Otown Party ${ed.num}.0 - ${ed.title}`, label: `Otown Party ${ed.num}.0`, date: `${ed.title} · ${ed.date}` }));
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
 
@@ -180,37 +160,17 @@ const Record = () => {
   const [clearing, setClearing] = useState(false);
 
   // Party reminder email state
-  const DEFAULT_REMINDER_SUBJECT = "🚨 TONIGHT: Otown Party 15.0 — Afro All Black Edition. Here's your gate guide";
+  const DEFAULT_REMINDER_SUBJECT = `Otown Party ${event.num}.0 — ${event.title}: Your gate guide`;
   const DEFAULT_REMINDER_MESSAGE = `Hey Raver,
 
-Today is the day. 🔥 Otown Party 15.0: Afro All Black Edition takes over Oyo Durbar Stadium, Oyo TONIGHT.
+${event.title} is calling. 🔥
+📅 ${event.date}
+🕕 ${event.time}
+📍 ${event.venue}
 
-📅 Today — Saturday, 17th October 2026
-🕕 Gates open 6PM · Music till 4AM
-📍 Oyo Durbar Stadium, Oyo State
+Save your ticket QR offline and present it at the ticket scan stand. Each QR admits one guest once. Bring your payment reference if you need help.
 
-HOW TO GET IN — READ THIS BEFORE YOU LEAVE HOME
-
-1. Find your QR code. It was emailed to this exact address when you bought your ticket (subject line mentions your Otown Party ticket). Search your inbox for "Otown Party" — check Spam/Promotions too.
-2. Save it offline. Screenshot the QR code or download the attached PNG to your gallery. Network at the venue can be slow — don't rely on opening an email at the gate.
-3. Turn your screen brightness UP. A dim or cracked screen slows the scanner down. A clean printed copy works perfectly too.
-4. At the gate, go to the TICKET SCAN STAND. Hold your QR code flat and steady about 20–30cm from the scanner. Our staff scans it, it turns green, and you're in.
-5. One scan per ticket. Each QR is unique and works ONCE. If you bought multiple tickets, each guest needs their own QR — don't share or post it online, whoever scans it first gets the entry.
-6. Bring a valid ID that matches the name on your ticket, in case we need to verify.
-7. Any issue at the gate? Don't queue twice — step aside to the support desk beside the scan stand with your payment reference and we'll sort you out in seconds.
-
-TO MAKE TONIGHT LEGENDARY
-
-• Arrive early — 6PM to 8PM is the smoothest entry window, and the opening set is worth it.
-• Dress the part. The Afro All Black Edition is a whole mood — come in your freshest fit.
-• Move with your squad. The energy is always bigger with your people.
-• Stay hydrated, pace the drinks, and look out for each other.
-• Vendors, food, drinks and shisha are all on ground — come with cash and transfer ready.
-
-Sound system loaded. DJ lineup ready. Lights set. Only one thing missing — you. 🌀
-
-See you on the dancefloor tonight.
-
+Let's Rave!
 — The Otown Party Team`;
 
   const [reminderOpen, setReminderOpen] = useState(false);
@@ -225,6 +185,7 @@ See you on the dancefloor tonight.
   // Edition selector + history
   const [selectedEdition, setSelectedEdition] = useState<string>(CURRENT_EDITION);
   const [historyOpen, setHistoryOpen] = useState(false);
+  useEffect(() => { setSelectedEdition(CURRENT_EDITION); setReminderSubject(DEFAULT_REMINDER_SUBJECT); setReminderMessage(DEFAULT_REMINDER_MESSAGE); }, [CURRENT_EDITION]);
 
 
   // New tabbed records state
@@ -736,7 +697,7 @@ See you on the dancefloor tonight.
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8 gap-1">
+            <TabsList className="flex flex-wrap w-full h-auto max-w-3xl mx-auto mb-8 gap-1">
               <TabsTrigger value="overview" className="gap-1.5 px-2 text-xs sm:text-sm">
                 <Ticket size={15} />
                 <span className="hidden sm:inline">Ticket </span>Purchases
@@ -754,6 +715,7 @@ See you on the dancefloor tonight.
                 <Lock size={15} />
                 <span className="hidden sm:inline">Ticket </span>Settings
               </TabsTrigger>
+              <TabsTrigger value="edition" className="gap-1.5 text-xs sm:text-sm">Next Edition</TabsTrigger>
             </TabsList>
 
             {/* OVERVIEW TAB (Original Functionality) */}
@@ -1229,6 +1191,7 @@ See you on the dancefloor tonight.
               </div>
             </TabsContent>
 
+            <TabsContent value="edition"><EditionPanel /></TabsContent>
             <TabsContent value="settings">
               <TicketLockPanel />
             </TabsContent>

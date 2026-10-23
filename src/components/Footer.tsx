@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { Instagram, Youtube } from "lucide-react";
 import logo from "@/assets/logo-trans.png";
-import { editions } from "@/data/editions";
+import { useEventEdition } from "@/hooks/useEventEdition";
 
 const Footer = () => {
+  const { editions } = useEventEdition();
   return (
     <footer className="bg-muted/30 border-t border-border">
       <div className="container mx-auto px-4 lg:px-8 py-16">

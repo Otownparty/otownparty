@@ -1,3 +1,4 @@
+import { useEventEdition } from "@/hooks/useEventEdition";
 import TicketBanner from "@/components/TicketBanner";
 import { useEffect, useState } from "react";
 import { Check, Mail, MapPin, Loader2, Minus, Plus, Sparkles, Repeat, X, Zap, Lock } from "lucide-react";
@@ -11,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 
 const db = supabase as any;
 
-const tickets = [
+const initialTickets = [
   { name: "Early Bird", badge: "Best Value", price: 4000, features: ["Full event access"], accent: "primary" as const, featured: true, soldOut: false },
   { name: "Regular", price: 5000, features: ["Full event access"], accent: "foreground" as const, featured: false, soldOut: false },
   { name: "VIP Experience", price: 15000, features: ["Full stage access", "Premium visibility", "Priority entry", "Access to merch"], accent: "pink" as const, featured: false, soldOut: false },
@@ -19,7 +20,7 @@ const tickets = [
 
 // Manual code-level override, still available if ever needed — but normally
 // leave this false and control locks from the staff dashboard instead.
-const ONLINE_SALES_CLOSED = false;
+
 
 const loadPaystackScript = () => new Promise<void>((resolve, reject) => {
   if (window.PaystackPop) return resolve();
@@ -31,6 +32,9 @@ const loadPaystackScript = () => new Promise<void>((resolve, reject) => {
 });
 
 const Tickets = () => {
+  const { event, ready, error: eventError } = useEventEdition();
+  const ONLINE_SALES_CLOSED = !event.salesOpen || !ready;
+  const tickets = initialTickets.map(t => ({ ...t, price: event.prices[t.name] ?? t.price }));
   const navigate = useNavigate();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState<string | null>(null);
@@ -91,6 +95,7 @@ const Tickets = () => {
           buyerEmail: buyerEmail.trim(),
           buyerPhone: buyerPhone.trim(),
           attendeeType,
+          expectedEdition: `Otown Party ${event.num}.0 - ${event.title}`,
         },
       });
       if (error || !data?.reference) throw new Error(error?.message || "Failed to start payment");
@@ -119,6 +124,7 @@ const Tickets = () => {
           buyer_name: buyerName.trim(),
           buyer_phone: buyerPhone.trim(),
           attendee_type: attendeeType,
+          expectedEdition: `Otown Party ${event.num}.0 - ${event.title}`,
         },
         channels: ["bank_transfer", "card", "ussd", "mobile_money", "qr", "bank"],
         onClose: () => setLoading(null),
@@ -129,7 +135,7 @@ const Tickets = () => {
           const goSuccess = () => {
             try { localStorage.removeItem(`otp_buyer_${ref}`); } catch {}
             navigate(
-              `/success?fullname=${encodeURIComponent(finalName)}&email=${encodeURIComponent(finalEmail)}`
+              `/success?edition=${encodeURIComponent(`Otown Party ${event.num}.0 - ${event.title}`)}&fullname=${encodeURIComponent(finalName)}&email=${encodeURIComponent(finalEmail)}`
             );
           };
           supabase.functions
@@ -167,10 +173,11 @@ const Tickets = () => {
         <div className="container mx-auto max-w-6xl px-4">
           <ScrollReveal>
             <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-2">Tickets & Contact</p>
-            <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">Otown Party 15.0 · Afro All Black Edition</h1>
-            <p className="text-muted-foreground max-w-2xl mb-8">Sat 17th October 2026 · 6PM–4AM · Oyo Durbar Stadium, Oyo State. Secure your place — tickets are limited.</p>
+            <h1 className="text-4xl sm:text-5xl font-display font-bold text-foreground mb-4">Otown Party {event.num}.0 · {event.title}</h1>
+            <p className="text-muted-foreground max-w-2xl mb-8">{event.date} · {event.time} · {event.venue}. Secure your place — tickets are limited.</p>
           </ScrollReveal>
 
+          {eventError && <p role="alert" className="text-destructive mb-4">{eventError}</p>}
           {/* Admin-controlled banner — set from the staff dashboard (Tickets → Ticket Settings) */}
           {banner.enabled && (banner.title.trim() || banner.message.trim()) && (
             <ScrollReveal>

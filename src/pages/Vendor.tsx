@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { useNavigate } from "react-router-dom";
-import { nextEdition } from "@/data/editions";
+import { useEventEdition } from "@/hooks/useEventEdition";
 
 // PaystackPop is declared globally in src/types/paystack.d.ts
 
@@ -48,6 +48,7 @@ const NON_CONSUMABLE_OPTIONS: CategoryOption[] = [
 ];
 
 const Vendor = () => {
+  const { event: nextEdition } = useEventEdition();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
