@@ -1,5 +1,5 @@
 - [x] Ticket Settings locks + banner
-- [ ] Verify countdown/ticket-record edition updates and isolate vendor lists and availability by edition
+- [x] Confirmed runtime countdown/ticket-record edition wiring; vendor lists, summaries, clearing and public availability now edition-specific — authenticated current/history readback and 8 tests passed
 - [x] ~~AI applicant summary~~ (cancelled by user)
 - [x] Resend QR tab in staff dashboard
 - [x] Separate Gallery update dashboard page with photographer link slots
