@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792784902089,
+      "tag": "0000_runtime_event_editions",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792784920080,
+      "tag": "0001_edition_graphics_admin_upload",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792785059110,
+      "tag": "0002_purchase_event_snapshots",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792785279819,
+      "tag": "0003_atomic_purchase_event_snapshot",
+      "breakpoints": true
+    }
+  ]
+}

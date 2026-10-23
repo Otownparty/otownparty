@@ -1,3 +1,4 @@
+import { getEvent } from "../_shared/event.ts";
 // Admin-only: manually re-send ticket QR emails to a buyer, from the same sender used for ticket delivery.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -8,7 +9,7 @@ const corsHeaders = {
 const json = (b: unknown, status = 200) =>
   new Response(JSON.stringify(b), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-const CURRENT_EDITION = "Otown Party 15.0 - Afro All Black Edition";
+
 
 async function qrAttachment(payload: string, filename: string) {
   const res = await fetch(`https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=20&data=${encodeURIComponent(payload)}`);
@@ -40,6 +41,7 @@ Deno.serve(async (req) => {
     if (!resendKey) return json({ error: "Email sending isn't configured" }, 500);
     const fromAddress = Deno.env.get("RESEND_FROM_EMAIL") || "Otown Party <onboarding@resend.dev>";
 
+    const CURRENT_EDITION = (await getEvent(admin)).edition;
     let tq = admin.from("tickets").select("*").ilike("buyer_email", email).order("ticket_index");
     if (scope === "current") tq = tq.eq("edition", CURRENT_EDITION);
     const { data: tickets, error: tErr } = await tq;

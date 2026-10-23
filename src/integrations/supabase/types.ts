@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      event_editions: {
+        Row: {
+          active: boolean
+          details: Json
+          edition: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          details?: Json
+          edition: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          details?: Json
+          edition?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       partner_blocks: {
         Row: {
           blocked_id: string
@@ -267,6 +288,7 @@ export type Database = {
           claimed_at: string | null
           created_at: string
           edition: string
+          event_details: Json | null
           id: string
           quantity: number
           reference: string
@@ -284,6 +306,7 @@ export type Database = {
           claimed_at?: string | null
           created_at?: string
           edition?: string
+          event_details?: Json | null
           id?: string
           quantity: number
           reference: string
@@ -301,6 +324,7 @@ export type Database = {
           claimed_at?: string | null
           created_at?: string
           edition?: string
+          event_details?: Json | null
           id?: string
           quantity?: number
           reference?: string
@@ -484,6 +508,7 @@ export type Database = {
           created_at: string
           edition: string
           email: string
+          event_details: Json | null
           id: string
           instagram: string | null
           paid_at: string | null
@@ -507,6 +532,7 @@ export type Database = {
           created_at?: string
           edition?: string
           email: string
+          event_details?: Json | null
           id?: string
           instagram?: string | null
           paid_at?: string | null
@@ -530,6 +556,7 @@ export type Database = {
           created_at?: string
           edition?: string
           email?: string
+          event_details?: Json | null
           id?: string
           instagram?: string | null
           paid_at?: string | null
@@ -558,6 +585,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      publish_event_edition: { Args: { p_details: Json }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "scanner"

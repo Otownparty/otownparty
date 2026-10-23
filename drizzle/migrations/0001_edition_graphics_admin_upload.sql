@@ -1,0 +1,2 @@
+CREATE POLICY "Public edition graphics" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'edition-graphics');
+CREATE POLICY "Admin edition uploads" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'edition-graphics' AND public.has_role(auth.uid(), 'admin'));

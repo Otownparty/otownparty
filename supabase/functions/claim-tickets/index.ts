@@ -1,3 +1,4 @@
+import { getEvent, eventEmailHeading, eventEmailSummary } from "../_shared/event.ts";
 // After payment verified, accept buyer name+email, create N tickets with signed QR codes,
 // generate QR images and email them via Resend.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -118,6 +119,7 @@ Deno.serve(async (req) => {
     const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
     const edition = intent.edition || "Otown Party 15.0 - Afro All Black Edition";
+    const event = intent.event_details ? { ...intent.event_details, edition } : await getEvent(supabase, edition);
     const unitPrice = intent.unit_price;
     const ticketType = intent.ticket_type;
     const quantity = intent.quantity;
@@ -200,8 +202,8 @@ Deno.serve(async (req) => {
 
     const emailHtml = `
       <div style="font-family:Arial,sans-serif; max-width:600px; margin:0 auto; padding:24px; color:#0a0a0a;">
-        <h1 style="color:#f5a623; margin:0 0 4px;">Otown Party 15.0</h1>
-        <p style="margin:0 0 24px; color:#666;">Afro All Black Edition — Sat 17th October 2026 · 6PM–4AM · Oyo Durbar Stadium, Oyo State</p>
+        <h1 style="color:#f5a623; margin:0 0 4px;">${eventEmailHeading(event)}</h1>
+        <p style="margin:0 0 24px; color:#666;">${eventEmailSummary(event)}</p>
         <p>Hi ${cleanName.replace(/[<>]/g, "")},</p>
         <p>Your payment has been confirmed. Below ${quantity > 1 ? `are your ${quantity} tickets` : "is your ticket"}. Each QR code is unique — present it at the gate for scanning.</p>
         ${ticketHtml}
@@ -224,7 +226,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: fromAddress,
         to: [cleanEmail],
-        subject: `Your Otown Party 15.0 Ticket${quantity > 1 ? "s" : ""} 🎉`,
+        subject: `Your ${edition.split(" - ")[0]} Ticket${quantity > 1 ? "s" : ""} 🎉`,
         html: emailHtml,
         attachments,
       }),

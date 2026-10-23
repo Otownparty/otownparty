@@ -1,3 +1,4 @@
+import { useEventEdition } from "@/hooks/useEventEdition";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QrScanner from "qr-scanner";
@@ -24,6 +25,7 @@ type ScanResult = {
 };
 
 const Scan = () => {
+  const { event } = useEventEdition();
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const scannerRef = useRef<QrScanner | null>(null);
@@ -133,6 +135,7 @@ const Scan = () => {
           </button>
         </div>
 
+        <p className="text-sm text-primary mb-6">Otown Party {event.num}.0 · {event.title}<br /><span className="text-muted-foreground">{event.date} · {event.venue}</span></p>
         {!scanning && !result && (
           <div className="bg-card border border-border rounded-xl p-8 text-center">
             <Camera className="mx-auto text-primary mb-4" size={40} />
@@ -206,9 +209,9 @@ const Scan = () => {
                     })()}
                   </p>
                 </div>
-                {result.kind === "vendor"
-                  ? <VendorDetails v={result.vendor!} />
-                  : <TicketDetails t={result.ticket!} />}
+                {result.kind === "vendor" && result.vendor
+                  ? <VendorDetails v={result.vendor} />
+                  : result.ticket ? <TicketDetails t={result.ticket} /> : null}
               </div>
             ) : (
               <div>
@@ -221,9 +224,9 @@ const Scan = () => {
                   </h2>
                   <p className="text-xs text-green-500/80">Marked as used</p>
                 </div>
-                {result.kind === "vendor"
-                  ? <VendorDetails v={result.vendor!} />
-                  : <TicketDetails t={result.ticket!} />}
+                {result.kind === "vendor" && result.vendor
+                  ? <VendorDetails v={result.vendor} />
+                  : result.ticket ? <TicketDetails t={result.ticket} /> : null}
               </div>
             )}
             <button

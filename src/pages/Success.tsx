@@ -1,9 +1,11 @@
+import { useEventEdition } from "@/hooks/useEventEdition";
 import { Check } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const Success = () => {
+  const { event } = useEventEdition();
   const [searchParams] = useSearchParams();
   const fullname = searchParams.get("fullname") || "Raver";
   const email = searchParams.get("email") || "";
@@ -29,7 +31,7 @@ const Success = () => {
 
             {/* Subject line */}
             <p className="text-primary text-xs font-semibold uppercase tracking-widest mb-4">
-              You've got the Glow.
+              You're on the guest list.
             </p>
 
             {/* Main heading — personalised */}
@@ -40,11 +42,11 @@ const Success = () => {
             {/* Body */}
             <p className="text-muted-foreground text-sm leading-relaxed mb-4">
               You've successfully joined the guest list for{" "}
-              <span className="text-foreground font-semibold">Otown Party 15.0 · Afro All Black Edition.</span>
+              <span className="text-foreground font-semibold">{searchParams.get("edition")?.replace(" - ", " · ") || `Otown Party ${event.num}.0 · ${event.title}`}.</span>
             </p>
 
             <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-              Saturday, 17th October 2026 · 6PM–4AM · Oyo Durbar Stadium, Oyo State. Prepare for a night of raw energy, unmatched sound, and the culture at its loudest. We're setting the vibe to make this a core memory.
+              {event.date} · {event.time} · {event.venue}. Prepare for a night of raw energy, unmatched sound, and the culture at its loudest. We're setting the vibe to make this a core memory.
             </p>
 
             <p className="text-muted-foreground text-sm leading-relaxed mb-6">

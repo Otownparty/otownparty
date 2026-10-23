@@ -21,6 +21,7 @@ import Partner from "./pages/Partner";
 import PartnerAdmin from "./pages/staff/PartnerAdmin";
 import Emails from "./pages/staff/Emails";
 import IntroSplash, { shouldShowIntro } from "./components/IntroSplash";
+import { EventEditionProvider } from "@/hooks/useEventEdition";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <EventEditionProvider>
         {showIntro && <IntroSplash onDone={() => setShowIntro(false)} />}
         <Toaster />
         <Sonner />
@@ -55,6 +57,7 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        </EventEditionProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

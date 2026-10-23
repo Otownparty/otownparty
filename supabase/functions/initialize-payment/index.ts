@@ -1,3 +1,4 @@
+import { getEvent } from "../_shared/event.ts";
 // Initialize a Paystack payment intent. Stores intent (with buyer info) in DB and returns reference + public key.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -19,7 +20,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { ticketType, quantity, buyerName, buyerEmail, buyerPhone, attendeeType } = await req.json();
+    const { ticketType, quantity, buyerName, buyerEmail, buyerPhone, attendeeType, expectedEdition } = await req.json();
 
     if (!ticketType || typeof ticketType !== "string" || !TICKET_PRICES[ticketType]) {
       return new Response(JSON.stringify({ error: "Invalid ticket type" }), {
@@ -49,14 +50,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    const unitPrice = TICKET_PRICES[ticketType];
-    const totalAmount = unitPrice * qty;
+    
     const reference = `OTP-${crypto.randomUUID()}`;
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    const event = await getEvent(supabase);
+    if (expectedEdition && expectedEdition !== event.edition) return new Response(JSON.stringify({ error: "The edition changed. Refresh and choose your ticket again." }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!event.salesOpen) return new Response(JSON.stringify({ error: "Online ticket sales are closed" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const unitPrice = Number(event.prices[ticketType]) * 100;
+    if (!Number.isInteger(unitPrice) || unitPrice <= 0) throw new Error("Ticket price is not configured");
+    const totalAmount = unitPrice * qty;
 
     const { data: lockRow } = await supabase
       .from("ticket_locks").select("locked").eq("ticket_name", ticketType).maybeSingle();
@@ -68,6 +75,8 @@ Deno.serve(async (req) => {
 
     const { error } = await supabase.from("payment_intents").insert({
       reference,
+      edition: event.edition,
+      event_details: event,
       ticket_type: ticketType,
       unit_price: unitPrice,
       quantity: qty,

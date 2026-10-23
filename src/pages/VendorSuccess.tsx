@@ -3,8 +3,10 @@ import { useEffect } from "react";
 import { Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useEventEdition } from "@/hooks/useEventEdition";
 
 const VendorSuccess = () => {
+  const { event } = useEventEdition();
   const [params] = useSearchParams();
   const name = params.get("name") || "Vendor";
   const email = params.get("email") || "";
@@ -53,6 +55,7 @@ const VendorSuccess = () => {
             <p className="text-primary text-xs font-semibold uppercase tracking-widest mb-4">
               Registration Confirmed
             </p>
+            <p className="text-sm text-primary mb-4">{params.get("edition")?.replace(" - ", " · ") || `Otown Party ${event.num}.0 · ${event.title}`}</p>
 
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground mb-4 leading-tight">
               Welcome to the movement,{" "}
