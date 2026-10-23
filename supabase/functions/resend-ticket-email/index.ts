@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const admin = createClient(url, service);
     const token = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
-    const { data: u } = await admin.auth.getUser(token);
+    const { data: u } = await createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } } }).auth.getUser();
     if (!u?.user) return json({ error: "Please sign in" }, 401);
     const { data: isAdmin } = await admin.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
     if (!isAdmin) return json({ error: "Admins only" }, 403);

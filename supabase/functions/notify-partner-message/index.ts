@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       { auth: { autoRefreshToken: false, persistSession: false } });
-    const { data: { user }, error: uErr } = await admin.auth.getUser(token);
+    const { data: { user }, error: uErr } = await createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } } }).auth.getUser();
     if (uErr || !user) return json({ error: "Unauthorized" }, 401);
 
     const { data: msg } = await admin.from("partner_messages").select("*").eq("id", messageId).maybeSingle();
