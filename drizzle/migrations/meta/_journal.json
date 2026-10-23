@@ -29,6 +29,13 @@
       "when": 1792785279819,
       "tag": "0003_atomic_purchase_event_snapshot",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792786000527,
+      "tag": "0004_gallery_import_jobs",
+      "breakpoints": true
     }
   ]
 }
