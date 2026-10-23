@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Loader2, Ticket, Heart, ScanLine, Mail, LogOut } from "lucide-react";
+import { Loader2, Ticket, Heart, ScanLine, Mail, LogOut, ImagePlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 
@@ -13,6 +14,13 @@ const toEmail = (input: string) => {
 };
 
 const TILES = [
+  {
+    key: "edition",
+    label: "Edition update",
+    desc: "Next edition graphic & details",
+    icon: ImagePlus,
+    path: "/record?tab=edition",
+  },
   {
     key: "tickets",
     label: "Tickets",
@@ -175,10 +183,11 @@ const StaffAuth = () => {
 
         <div className="grid grid-cols-2 gap-4">
           {TILES.map((t) => (
-            <button
+            <Button
               key={t.key}
+              variant="outline"
               onClick={() => navigate(t.path)}
-              className="flex flex-col items-start gap-3 p-5 rounded-xl bg-card border border-border text-left hover:border-primary hover:bg-primary/5 transition"
+              className="h-auto whitespace-normal flex flex-col items-start gap-3 p-5 rounded-xl bg-card border border-border text-left hover:border-primary hover:bg-primary/5 transition"
             >
               <span className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                 <t.icon size={20} />
@@ -187,7 +196,7 @@ const StaffAuth = () => {
                 <span className="block font-display text-lg text-foreground">{t.label}</span>
                 <span className="block text-xs text-muted-foreground mt-0.5">{t.desc}</span>
               </span>
-            </button>
+            </Button>
           ))}
         </div>
       </div>

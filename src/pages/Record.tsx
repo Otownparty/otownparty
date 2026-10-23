@@ -189,7 +189,7 @@ Let's Rave!
 
 
   // New tabbed records state
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get("tab") === "edition" ? "edition" : "overview");
   const [ticketSearch, setTicketSearch] = useState("");
   const [vendorSearch, setVendorSearch] = useState("");
   const [ticketPurchases, setTicketPurchases] = useState<TicketPurchaseRecord[]>([]);
@@ -715,7 +715,7 @@ Let's Rave!
                 <Lock size={15} />
                 <span className="hidden sm:inline">Ticket </span>Settings
               </TabsTrigger>
-              <TabsTrigger value="edition" className="gap-1.5 text-xs sm:text-sm">Next Edition</TabsTrigger>
+              <TabsTrigger value="edition" className="gap-1.5 text-xs sm:text-sm">Edition update</TabsTrigger>
             </TabsList>
 
             {/* OVERVIEW TAB (Original Functionality) */}
