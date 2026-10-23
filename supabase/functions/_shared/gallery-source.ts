@@ -10,11 +10,28 @@ export function validatePhotoLink(value: string) {
   if (url.protocol !== "https:" || url.username || url.password || url.port || !imageHosts.test(url.hostname)) throw new Error("Photo host is not supported");
   return url.href;
 }
+const UA = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", Accept: "text/html,application/json" };
+async function discoverPixsilos(url: URL): Promise<string[]> {
+  const slug = url.pathname.split("/").filter(Boolean).pop();
+  if (!slug || !/^[a-z0-9-]+$/i.test(slug)) throw new Error("Use a Pixsilos gallery link");
+  const res = await fetch(`https://api.pixsilos.com/api/galleries/g/${slug}/images`, { headers: UA });
+  if (!res.ok) throw new Error(`Photographer site returned ${res.status}. Check the gallery link is public.`);
+  const body = await res.json().catch(() => null);
+  const media = body?.data?.media;
+  const expected = Number(body?.data?.gallery?.mediaCount ?? (Array.isArray(media) ? media.length : 0));
+  if (!Array.isArray(media)) throw new Error("Could not read this Pixsilos gallery");
+  const photos = media.filter((m: any) => m?.type === "IMAGE" && typeof m.url === "string").map((m: any) => validatePhotoLink(m.url));
+  const images = media.filter((m: any) => m?.type === "IMAGE").length;
+  if (!photos.length || photos.length < images || media.length < expected) throw new Error(`Could not verify the complete photo collection (${photos.length} of ${expected} accessible). Nothing was published.`);
+  return [...new Set(photos)];
+}
 export async function discoverPhotos(link: string): Promise<string[]> {
-  const response = await fetch(validateGalleryLink(link), { redirect: "manual" });
+  const gallery = new URL(validateGalleryLink(link));
+  if (/pixsilos\.com$/.test(gallery.hostname)) return discoverPixsilos(gallery);
+  const response = await fetch(gallery.href, { redirect: "manual", headers: UA });
   if (!response.ok) throw new Error(`Photographer site returned ${response.status}. Ask the photographer for an unrestricted public gallery link.`);
   const html = await response.text();
-  if (/Just a moment|cf-chl-|challenge-platform|Access Denied/i.test(html)) throw new Error("This photographer site blocks automatic importing. Ask for a public downloadable gallery.");
+  if (/<title>\s*Just a moment|cf-chl-|<title>\s*Access Denied/i.test(html)) throw new Error("This photographer site blocks automatic importing. Ask for a public downloadable gallery.");
   const decoded = html.replace(/\\"/g, '"').replace(/\\\//g, "/").replace(/\\u0026|&amp;/g, "&");
   const urls = [...decoded.matchAll(/https:\/\/(?:media\.pixsilos\.com|(?:[a-z0-9-]+\.)*pixieset\.com)\/[^\s"'<>\\]+/gi)].map(m => m[0]).filter(url => /\.(?:jpe?g|png|webp)(?:\?|$)/i.test(url));
   const map = new Map<string, string>();

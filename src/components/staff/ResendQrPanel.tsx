@@ -11,6 +11,7 @@ type Entry = { email: string; results?: Result[]; error?: string };
 
 const ResendQrPanel = () => {
   const [email, setEmail] = useState("");
+  const [reference, setReference] = useState("");
   const [scope, setScope] = useState<"current" | "all">("current");
   const [sending, setSending] = useState(false);
   const [log, setLog] = useState<Entry[]>([]);
@@ -19,9 +20,11 @@ const ResendQrPanel = () => {
     e.preventDefault();
     const emails = email.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
     if (!emails.length) return toast.error("Enter at least one email");
+    const ref = reference.trim();
+    if (ref && emails.length > 1) return toast.error("Use one email when sending by reference ID");
     setSending(true);
     for (const addr of emails) {
-      const { data, error } = await supabase.functions.invoke("resend-ticket-email", { body: { email: addr, scope } });
+      const { data, error } = await supabase.functions.invoke("resend-ticket-email", { body: { email: addr, scope, ...(ref ? { reference: ref } : {}) } });
       let entry: Entry = { email: addr };
       if (error) {
         let msg = error.message;
@@ -33,7 +36,7 @@ const ResendQrPanel = () => {
       setLog((l) => [entry, ...l]);
     }
     setSending(false);
-    setEmail("");
+    setEmail(""); setReference("");
   };
 
   return (
@@ -48,6 +51,14 @@ const ResendQrPanel = () => {
 
       <form onSubmit={send} className="border border-border rounded-xl bg-card p-4 space-y-4">
         <Input
+          aria-label="Payment reference ID"
+          placeholder="Payment reference ID (optional)"
+          value={reference}
+          onChange={(e) => setReference(e.target.value)}
+        />
+        <p className="text-xs text-muted-foreground">With a reference ID, that order's tickets go to the email below — even if it differs from the one used to pay. They are the same QR codes, so each can still be scanned only once.</p>
+        <Input
+          aria-label="Email to send to"
           placeholder="buyer@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
