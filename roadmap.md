@@ -1,4 +1,5 @@
 - [x] Ticket Settings locks + banner
+- [ ] Verify countdown/ticket-record edition updates and isolate vendor lists and availability by edition
 - [x] ~~AI applicant summary~~ (cancelled by user)
 - [x] Resend QR tab in staff dashboard
 - [x] Separate Gallery update dashboard page with photographer link slots
