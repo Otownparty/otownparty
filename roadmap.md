@@ -2,6 +2,7 @@
 - [x] ~~AI applicant summary~~ (cancelled by user)
 - [x] Resend QR tab in staff dashboard
 - [x] Separate Gallery update dashboard page with photographer link slots
+- [x] Handle blocked photographer imports without runtime errors or a blank staff page — authenticated mobile check passed with a real blocked link; 10 gallery tests passed
 - [x] Staged batched photo import, atomic publishing and archive preservation with unit tests
 - [x] Last Edition first/default and runtime gallery refresh
 - [ ] Complete real photographer import and published-gallery readback — supplied Pixsilos/Pixieset pages block automated access or do not expose complete manifests; needs accessible photo collection links

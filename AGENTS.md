@@ -3,3 +3,4 @@
 - Publishing editions must be atomic and admin-authorized, and historical purchases must retain their original edition and event details.
 - Mount edition management on a dedicated admin-authorized staff route, independent of ticket-record loading and controls, to keep staff workflows separate.
 - Gallery imports stage photos in Cloud storage in resumable, admin-triggered batches; publish atomically only after every source is verified complete, retaining published albums as the archive. Provider access restrictions must fail visibly without changing the public gallery.
+- Return expected photographer-access failures as terminal failed-job results, not HTTP errors; the staff importer must stop polling and retain its page so blocked sources never masquerade as application crashes.

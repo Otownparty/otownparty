@@ -31,6 +31,7 @@ Deno.serve(async req => {
     const { data: job, error: jobError } = await db.from("gallery_imports").select().eq("id", body.id).single();
     if (jobError) throw jobError;
     if (job.status === "published" || job.status === "ready") return json({ status: job.status });
+    if (job.status === "failed") return json({ error: job.error || "A photographer link could not be imported", status: "failed" });
     const links = job.links as { url: string; status: string; count: number; error?: string }[];
     const pending = links.find(link => link.status === "pending");
     if (pending) {
@@ -48,10 +49,10 @@ Deno.serve(async req => {
       } catch (error) {
         pending.status = "failed"; pending.error = (error as Error).message;
         await db.from("gallery_imports").update({ links, status: "failed", error: pending.error }).eq("id", job.id);
-        return json({ error: pending.error, status: "failed" }, 422);
+        return json({ error: pending.error, status: "failed" });
       }
     }
-    if (links.some(l => l.status === "failed")) return json({ error: job.error || "A photographer link could not be imported", status: "failed" }, 422);
+    if (links.some(l => l.status === "failed")) return json({ error: job.error || "A photographer link could not be imported", status: "failed" });
     const { data: pendingPhotos, error: readError } = await db.from("gallery_photos").select().eq("import_id", job.id).is("storage_path", null).order("position").limit(4);
     if (readError) throw readError;
     for (const photo of pendingPhotos ?? []) {
@@ -72,7 +73,7 @@ Deno.serve(async req => {
       } catch (error) {
         await db.from("gallery_photos").update({ error: (error as Error).message }).eq("id", photo.id);
         await db.from("gallery_imports").update({ status: "failed", error: (error as Error).message }).eq("id", job.id);
-        return json({ error: (error as Error).message, status: "failed" }, 422);
+        return json({ error: (error as Error).message, status: "failed" });
       }
     }
     const { count, error: countError } = await db.from("gallery_photos").select("id", { count: "exact", head: true }).eq("import_id", job.id).is("storage_path", null);
