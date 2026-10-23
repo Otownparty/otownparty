@@ -327,7 +327,7 @@ const Tickets = () => {
                   <a href="mailto:pr@otownparty.com" className="hover:text-primary transition">pr@otownparty.com</a>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <MapPin size={16} className="text-primary" /> Africa – Location Announced Per Edition
+                  <MapPin size={16} className="text-primary" /> {event.venue}
                 </div>
               </div>
             </ScrollReveal>

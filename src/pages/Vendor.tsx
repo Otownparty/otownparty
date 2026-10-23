@@ -206,7 +206,7 @@ const Vendor = () => {
               }).catch((e) => console.error("send-vendor-qr failed:", e));
 
               navigate(
-                `/vendor-success?name=${encodeURIComponent(form.brandName)}&email=${encodeURIComponent(form.email)}&category=${encodeURIComponent(selectedOption.label)}`
+                `/vendor-success?edition=${encodeURIComponent(`Otown Party ${nextEdition.num}.0 - ${nextEdition.title}`)}&name=${encodeURIComponent(form.brandName)}&email=${encodeURIComponent(form.email)}&category=${encodeURIComponent(selectedOption.label)}`
               );
             });
         },

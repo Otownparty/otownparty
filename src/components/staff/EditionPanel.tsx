@@ -28,7 +28,7 @@ export default function EditionPanel() {
       const { error } = await supabase.storage.from("edition-graphics").upload(path, file, { contentType: file.type, upsert: false });
       if (error) throw error;
       const { data: image } = supabase.storage.from("edition-graphics").getPublicUrl(path);
-      setDraft(d => ({ ...d, img: image.publicUrl })); setUploaded(true);
+      setDraft(d => ({ ...d, num: event.num + 1, title: "", date: "", shortDate: "", time: "", venue: "", startsAt: "", desc: "", contacts: "", img: image.publicUrl })); setUploaded(true);
       const { data, error: readError } = await supabase.functions.invoke("extract-edition", { body: { path } });
       if (readError) {
         const response = readError.context;
@@ -63,7 +63,7 @@ export default function EditionPanel() {
     {busy && <p role="status" className="flex items-center gap-2 text-primary"><Loader2 size={16} className="animate-spin" />{busy}</p>}
     {warning && <p role="alert" className="text-sm text-primary border-l-2 border-primary pl-3">{warning}</p>}
     <div className="grid md:grid-cols-[240px_1fr] gap-8">
-      <div className="aspect-[4/5] bg-muted overflow-hidden rounded-lg">{draft.img ? <img src={draft.img} alt="Edition graphic preview" className="w-full h-full object-contain" /> : <ImagePlus className="m-auto" />}</div>
+      <div className="w-full max-w-60 aspect-[4/5] bg-muted overflow-hidden rounded-lg">{draft.img ? <img src={draft.img} alt="Edition graphic preview" className="w-full h-full object-contain" /> : <ImagePlus className="m-auto" />}</div>
       <div className="grid sm:grid-cols-2 gap-4">
         <div><Label htmlFor="edition-num">Edition number</Label><Input id="edition-num" type="number" min={1} value={draft.num} onChange={e => set("num", Number(e.target.value))} /></div>
         <div><Label htmlFor="edition-title">Edition name</Label><Input id="edition-title" value={draft.title} onChange={e => set("title", e.target.value)} /></div>
