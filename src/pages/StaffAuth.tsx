@@ -19,7 +19,7 @@ const TILES = [
     label: "Edition update",
     desc: "Next edition graphic & details",
     icon: ImagePlus,
-    path: "/record?tab=edition",
+    path: "/staff/edition",
   },
   {
     key: "tickets",
