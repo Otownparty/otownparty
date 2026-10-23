@@ -35,6 +35,8 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const scope = body.scope === "all" ? "all" : "current";
+    const reference = typeof body.reference === "string" ? body.reference.trim() : "";
+    if (reference && (reference.length > 100 || !/^[A-Za-z0-9_.-]+$/.test(reference))) return json({ error: "Enter a valid reference ID" }, 400);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 255) return json({ error: "Enter a valid email" }, 400);
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
@@ -42,14 +44,16 @@ Deno.serve(async (req) => {
     const fromAddress = Deno.env.get("RESEND_FROM_EMAIL") || "Otown Party <onboarding@resend.dev>";
 
     const CURRENT_EDITION = (await getEvent(admin)).edition;
-    let tq = admin.from("tickets").select("*").ilike("buyer_email", email).order("ticket_index");
-    if (scope === "current") tq = tq.eq("edition", CURRENT_EDITION);
+    let tq = admin.from("tickets").select("*").order("ticket_index");
+    tq = reference ? tq.eq("payment_reference", reference) : tq.ilike("buyer_email", email);
+    if (scope === "current" && !reference) tq = tq.eq("edition", CURRENT_EDITION);
     const { data: tickets, error: tErr } = await tq;
     if (tErr) throw tErr;
 
     // Paid orders where tickets were never created — finish them through the normal claim step.
-    let iq = admin.from("payment_intents").select("reference, buyer_name, edition").ilike("buyer_email", email).in("status", ["verified", "claimed"]);
-    if (scope === "current") iq = iq.eq("edition", CURRENT_EDITION);
+    let iq = admin.from("payment_intents").select("reference, buyer_name, edition").in("status", ["verified", "claimed"]);
+    iq = reference ? iq.eq("reference", reference) : iq.ilike("buyer_email", email);
+    if (scope === "current" && !reference) iq = iq.eq("edition", CURRENT_EDITION);
     const { data: intents } = await iq;
     const haveRefs = new Set((tickets ?? []).map((t) => t.payment_reference));
     const missing = (intents ?? []).filter((i) => !haveRefs.has(i.reference));
@@ -114,6 +118,7 @@ Deno.serve(async (req) => {
       }
     }
 
+    if (!results.length && reference) return json({ error: "No paid ticket found with this reference ID" }, 404);
     if (!results.length) return json({ error: scope === "current" ? "No paid tickets found for this email in the current edition" : "No paid tickets found for this email" }, 404);
     return json({ results });
   } catch (e) {
