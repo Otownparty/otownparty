@@ -8,6 +8,13 @@
       "when": 1792784902089,
       "tag": "0000_runtime_event_editions",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792784920080,
+      "tag": "0001_edition_graphics_admin_upload",
+      "breakpoints": true
     }
   ]
 }
