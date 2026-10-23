@@ -1,6 +1,5 @@
 import { useEventEdition } from "@/hooks/useEventEdition";
 import { editionKey } from "@/lib/eventEdition";
-import EditionPanel from "@/components/staff/EditionPanel";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -189,7 +188,7 @@ Let's Rave!
 
 
   // New tabbed records state
-  const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get("tab") === "edition" ? "edition" : "overview");
+  const [activeTab, setActiveTab] = useState("overview");
   const [ticketSearch, setTicketSearch] = useState("");
   const [vendorSearch, setVendorSearch] = useState("");
   const [ticketPurchases, setTicketPurchases] = useState<TicketPurchaseRecord[]>([]);
@@ -715,7 +714,6 @@ Let's Rave!
                 <Lock size={15} />
                 <span className="hidden sm:inline">Ticket </span>Settings
               </TabsTrigger>
-              <TabsTrigger value="edition" className="gap-1.5 text-xs sm:text-sm">Edition update</TabsTrigger>
             </TabsList>
 
             {/* OVERVIEW TAB (Original Functionality) */}
@@ -1191,7 +1189,6 @@ Let's Rave!
               </div>
             </TabsContent>
 
-            <TabsContent value="edition"><EditionPanel /></TabsContent>
             <TabsContent value="settings">
               <TicketLockPanel />
             </TabsContent>

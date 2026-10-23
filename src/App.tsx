@@ -20,6 +20,7 @@ import VendorSuccess from "./pages/VendorSuccess";
 import Partner from "./pages/Partner";
 import PartnerAdmin from "./pages/staff/PartnerAdmin";
 import Emails from "./pages/staff/Emails";
+import EditionUpdate from "./pages/staff/EditionUpdate";
 import IntroSplash, { shouldShowIntro } from "./components/IntroSplash";
 import { EventEditionProvider } from "@/hooks/useEventEdition";
 
@@ -53,6 +54,7 @@ const App = () => {
             <Route path="/partner" element={<Partner />} />
             <Route path="/staff/partner" element={<PartnerAdmin />} />
             <Route path="/staff/emails" element={<Emails />} />
+            <Route path="/staff/edition" element={<EditionUpdate />} />
             <Route path="/records" element={<Record />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
