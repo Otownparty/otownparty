@@ -2,7 +2,7 @@ import { useEventEdition } from "@/hooks/useEventEdition";
 import { editionKey } from "@/lib/eventEdition";
 import { vendorsForEdition } from "@/lib/vendor-edition";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Loader2,
   LogOut,
@@ -628,6 +628,12 @@ Let's Rave!
   return (
     <main className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-6xl mx-auto">
+        <Link
+          to="/staff"
+          className="inline-flex items-center gap-2 mb-4 text-sm text-muted-foreground hover:text-primary transition"
+        >
+          <ArrowLeft size={16} /> Staff Dashboard
+        </Link>
         {/* Header */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>

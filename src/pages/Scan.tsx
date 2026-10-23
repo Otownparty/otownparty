@@ -1,8 +1,8 @@
 import { useEventEdition } from "@/hooks/useEventEdition";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import QrScanner from "qr-scanner";
-import { Loader2, Check, X, AlertTriangle, Camera, LogOut } from "lucide-react";
+import { Loader2, Check, X, AlertTriangle, Camera, LogOut, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 
@@ -125,6 +125,12 @@ const Scan = () => {
   return (
     <main className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-md mx-auto">
+        <Link
+          to="/staff"
+          className="inline-flex items-center gap-2 mb-4 text-sm text-muted-foreground hover:text-primary transition"
+        >
+          <ArrowLeft size={16} /> Staff Dashboard
+        </Link>
         <div className="flex items-center justify-between mb-6">
           <h1 className="font-display font-bold text-xl text-foreground">Gate Scanner</h1>
           <button
