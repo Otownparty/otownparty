@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
     );
 
     const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer /, "");
-    const { data: user } = await supabase.auth.getUser(token);
+    const { data: user } = await createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } } }).auth.getUser();
     if (!user.user) return new Response(JSON.stringify({ error: "Please sign in" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const { data: allowed } = await supabase.rpc("has_role", { _user_id: user.user.id, _role: "admin" });
     if (!allowed) return new Response(JSON.stringify({ error: "Admin access required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
