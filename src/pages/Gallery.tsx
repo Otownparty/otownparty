@@ -5,6 +5,9 @@ import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
 import { lastEditionPhotos } from "@/data/lastEditionPhotos";
 import { previousEditionPhotos } from "@/data/previousEditionPhotos";
+import { useGalleryPhotos } from "@/hooks/useGalleryPhotos";
+import { defaultGalleryFilter, galleryFilters } from "@/lib/gallery";
+import { Button } from "@/components/ui/button";
 
 // ── Archive photos (gallery-1.jpg … gallery-38.jpg) ──────────────────────────
 import g1 from "@/assets/gallery-1.jpg";
@@ -97,13 +100,11 @@ const photos: Photo[] = [
   ...lastEditionPhotos.map((p) => ({ ...p, era: "last" })),
 ];
 
-const filters = [
-  { label: "All Editions", value: "all" },
-  { label: "Last Edition", value: "last" },
-];
+const filters = galleryFilters;
 
 const Gallery = () => {
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState<string>(defaultGalleryFilter);
+  const livePhotos = useGalleryPhotos(photos);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [controlsVisible, setControlsVisible] = useState(true);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -115,7 +116,7 @@ const Gallery = () => {
   }, []);
 
   const filtered =
-    filter === "all" ? photos : photos.filter((p) => p.era === filter);
+    filter === "all" ? livePhotos : livePhotos.filter((p) => p.era === filter);
 
   const close = useCallback(() => setLightbox(null), []);
   const prev = useCallback(
@@ -175,9 +176,11 @@ const Gallery = () => {
           {/* Filters */}
           <div className="flex flex-wrap gap-2 mb-10">
             {filters.map((f) => (
-              <button
+              <Button
                 key={f.value}
-                onClick={() => setFilter(f.value)}
+                variant={filter === f.value ? "default" : "outline"}
+                aria-pressed={filter === f.value}
+                onClick={() => { setLightbox(null); setFilter(f.value); }}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   filter === f.value
                     ? "bg-primary text-primary-foreground"
@@ -185,7 +188,7 @@ const Gallery = () => {
                 }`}
               >
                 {f.label}
-              </button>
+              </Button>
             ))}
           </div>
 
