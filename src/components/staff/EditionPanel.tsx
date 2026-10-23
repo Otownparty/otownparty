@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Upload, Loader2, Check, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ export default function EditionPanel() {
   const [warning, setWarning] = useState("");
   const [uploaded, setUploaded] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (!uploaded) setDraft({ ...event, prices: { ...event.prices } }); }, [event]); // eslint-disable-line react-hooks/exhaustive-deps
   const set = (key: keyof EventDetails, value: string | number | boolean) => setDraft(d => ({ ...d, [key]: value }));
   const upload = async (file?: File) => {
     if (!file) return;
