@@ -12,7 +12,10 @@ Deno.serve(async req => {
     const url = Deno.env.get("SUPABASE_URL"); const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"); const key = Deno.env.get("LOVABLE_API_KEY");
     if (!url || !service || !key) return json({ error: "Flyer reading is not configured" }, 500);
     const admin = createClient(url, service);
-    const { data: user } = await admin.auth.getUser((req.headers.get("Authorization") ?? "").replace(/^Bearer /, ""));
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) return json({ error: "Please sign in" }, 401);
+    const userClient = createClient(url, Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+    const { data: user } = await userClient.auth.getUser();
     if (!user.user) return json({ error: "Please sign in" }, 401);
     const { data: allowed } = await admin.rpc("has_role", { _user_id: user.user.id, _role: "admin" });
     if (!allowed) return json({ error: "Admin access required" }, 403);
