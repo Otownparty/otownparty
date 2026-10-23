@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      event_editions: {
+        Row: {
+          active: boolean
+          details: Json
+          edition: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          details?: Json
+          edition: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          details?: Json
+          edition?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       partner_blocks: {
         Row: {
           blocked_id: string
@@ -558,6 +579,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      publish_event_edition: { Args: { p_details: Json }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "scanner"
