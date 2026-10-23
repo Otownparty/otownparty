@@ -1,3 +1,4 @@
+import { getEvent, eventEmailHeading } from "../_shared/event.ts";
 // Send a party reminder email to all ticket buyers for a given edition.
 // Requires an authenticated staff session (verify_jwt = true).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -6,11 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-const CURRENT_EDITION = "Otown Party 15.0 - Afro All Black Edition";
-const EVENT_DATE = "Saturday, 17th October 2026";
-const EVENT_TIME = "6PM – 4AM";
-const EVENT_VENUE = "Oyo Durbar Stadium, Oyo State";
 
 const escapeHtml = (s: string) =>
   String(s).replace(/[&<>"']/g, (c) => ({
@@ -26,55 +22,21 @@ function textToHtml(body: string): string {
   return paragraphs.join("");
 }
 
-const defaultSubject = `🚨 TONIGHT: Otown Party 15.0 — Afro All Black Edition. Here's your gate guide`;
-
-const defaultBody = `Hey Raver,
-
-Today is the day. 🔥 Otown Party 15.0: Afro All Black Edition takes over ${EVENT_VENUE} TONIGHT.
-
-📅 Today — ${EVENT_DATE}
-🕕 Gates open 6PM · Music till 4AM
-📍 ${EVENT_VENUE}
-
-HOW TO GET IN — READ THIS BEFORE YOU LEAVE HOME
-
-1. Find your QR code. It was emailed to this exact address when you bought your ticket. Search your inbox for "Otown Party" — check Spam/Promotions too.
-2. Save it offline. Screenshot the QR code or download the attached PNG to your gallery. Network at the venue can be slow — don't rely on opening an email at the gate.
-3. Turn your screen brightness UP. A dim or cracked screen slows the scanner down. A clean printed copy works perfectly too.
-4. At the gate, go to the TICKET SCAN STAND. Hold your QR code flat and steady about 20–30cm from the scanner. Our staff scans it, it turns green, and you're in.
-5. One scan per ticket. Each QR is unique and works ONCE. If you bought multiple tickets, each guest needs their own QR — don't share or post it online, whoever scans it first gets the entry.
-6. Bring a valid ID that matches the name on your ticket, in case we need to verify.
-7. Any issue at the gate? Don't queue twice — step aside to the support desk beside the scan stand with your payment reference and we'll sort you out in seconds.
-
-TO MAKE TONIGHT LEGENDARY
-
-• Arrive early — 6PM to 8PM is the smoothest entry window, and the opening set is worth it.
-• Dress the part. The Afro All Black Edition is a whole mood — come in your freshest fit.
-• Move with your squad. The energy is always bigger with your people.
-• Stay hydrated, pace the drinks, and look out for each other.
-• Vendors, food, drinks and shisha are all on ground — come with cash and transfer ready.
-
-Sound system loaded. DJ lineup ready. Lights set. Only one thing missing — you. 🌀
-
-See you on the dancefloor tonight.
-
-— The Otown Party Team`;
-
-function buildEmailHtml(subject: string, body: string) {
+function buildEmailHtml(subject: string, body: string, event: Awaited<ReturnType<typeof getEvent>>) {
   const bodyHtml = textToHtml(body);
   return `
     <div style="font-family: Arial, Helvetica, sans-serif; max-width:600px; margin:0 auto; padding:0; background:#ffffff;">
       <div style="background:linear-gradient(135deg,#0a0a0a 0%, #1a1208 100%); padding:32px 24px; text-align:center;">
-        <p style="margin:0 0 6px; color:#f5a623; font-size:11px; font-weight:bold; letter-spacing:3px; text-transform:uppercase;">Otown Party 15.0</p>
-        <h1 style="margin:0; color:#ffffff; font-size:26px; letter-spacing:1px;">Afro All Black Edition</h1>
-        <p style="margin:8px 0 0; color:#e8728a; font-size:13px;">${EVENT_DATE} · ${EVENT_VENUE}</p>
+        <p style="margin:0 0 6px; color:#f5a623; font-size:11px; font-weight:bold; letter-spacing:3px; text-transform:uppercase;">${eventEmailHeading(event)}</p>
+        <h1 style="margin:0; color:#ffffff; font-size:26px; letter-spacing:1px;">${escapeHtml(event.title)}</h1>
+        <p style="margin:8px 0 0; color:#e8728a; font-size:13px;">${escapeHtml(event.date)} · ${escapeHtml(event.venue)}</p>
       </div>
       <div style="padding:32px 28px 24px; background:#ffffff;">
         ${bodyHtml}
       </div>
       <div style="padding:20px 28px; background:#fafafa; border-top:1px solid #eee; text-align:center;">
         <p style="margin:0; font-size:12px; color:#888;">
-          You're receiving this because you purchased a ticket for ${escapeHtml(CURRENT_EDITION)}.
+          You're receiving this because you purchased a ticket for ${escapeHtml(event.edition)}.
         </p>
         <p style="margin:8px 0 0; font-size:12px;">
           <a href="https://otownparty.com" style="color:#f5a623; text-decoration:none;">otownparty.com</a>
@@ -96,6 +58,15 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer /, "");
+    const { data: user } = await supabase.auth.getUser(token);
+    if (!user.user) return new Response(JSON.stringify({ error: "Please sign in" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: allowed } = await supabase.rpc("has_role", { _user_id: user.user.id, _role: "admin" });
+    if (!allowed) return new Response(JSON.stringify({ error: "Admin access required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const activeEvent = await getEvent(supabase);
+    const CURRENT_EDITION = activeEvent.edition;
+    const defaultSubject = `${CURRENT_EDITION}: Your gate guide`;
+    const defaultBody = `Hey Raver,\n\n${activeEvent.title} is calling.\n${activeEvent.date} · ${activeEvent.time}\n${activeEvent.venue}\n\nSave your ticket QR offline and present it at the ticket scan stand. Each ticket scans once. Bring your payment reference for assistance.\n\nLet's Rave!`;
     const body = await req.json().catch(() => ({}));
     const subject = (typeof body?.subject === "string" && body.subject.trim())
       ? body.subject.trim().slice(0, 200)
@@ -163,7 +134,7 @@ Deno.serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const html = buildEmailHtml(subject, messageBody);
+    const html = buildEmailHtml(subject, messageBody, await getEvent(supabase, edition));
 
     let sent = 0;
     let failed = 0;
