@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Upload, Loader2, Check, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ export default function EditionPanel() {
   const [warning, setWarning] = useState("");
   const [uploaded, setUploaded] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (!uploaded) setDraft({ ...event, prices: { ...event.prices } }); }, [event]); // eslint-disable-line react-hooks/exhaustive-deps
   const set = (key: keyof EventDetails, value: string | number | boolean) => setDraft(d => ({ ...d, [key]: value }));
   const upload = async (file?: File) => {
     if (!file) return;
@@ -46,7 +47,8 @@ export default function EditionPanel() {
   const publish = async () => {
     const invalid = validateEvent(draft);
     if (invalid) return toast.error(invalid);
-    if (!uploaded) return toast.error("Upload the next edition graphic first");
+    if (!uploaded && draft.num !== event.num) return toast.error("Upload the next edition graphic first");
+    if (Date.parse(draft.startsAt) <= Date.now()) return toast.error("Countdown start must be in the future");
     setBusy("Publishing edition…");
     try {
       const { error } = await supabase.rpc("publish_event_edition", { p_details: JSON.parse(JSON.stringify(draft)) });
@@ -77,6 +79,6 @@ export default function EditionPanel() {
         <div className="flex items-center gap-3"><Switch id="edition-sales" checked={draft.salesOpen} onCheckedChange={v => set("salesOpen", v)} /><Label htmlFor="edition-sales">Online ticket sales</Label></div>
       </div>
     </div>
-    <Button onClick={() => void publish()} disabled={!!busy || !uploaded}><Check size={16} className="mr-2" />Confirm & publish edition</Button>
+    <Button onClick={() => void publish()} disabled={!!busy}><Check size={16} className="mr-2" />Confirm & publish edition</Button>
   </section>;
 }
