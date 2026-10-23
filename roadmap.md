@@ -1,3 +1,6 @@
 - [x] Ticket Settings locks + banner
 - [x] ~~AI applicant summary~~ (cancelled by user)
 - [x] Resend QR tab in staff dashboard
+- [ ] Admin flyer upload, extraction and confirmed edition publishing
+- [ ] Live edition details across pages, payments, records, scanner and emails
+- [ ] Cloudflare compatibility and end-to-end verification
