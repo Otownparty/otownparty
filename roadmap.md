@@ -1,6 +1,10 @@
 - [x] Ticket Settings locks + banner
 - [x] ~~AI applicant summary~~ (cancelled by user)
 - [x] Resend QR tab in staff dashboard
+- [ ] Separate Gallery update dashboard page with photographer link slots
+- [ ] Resumable photo import, atomic Last Edition publishing and archive preservation
+- [ ] Last Edition first/default and runtime gallery refresh through Cloudflare
+- [ ] Verify real photographer imports and public gallery readback
 - [x] Admin flyer upload, extraction and confirmed edition publishing
 - [x] Live edition details across pages, payments, records, scanner and emails
 - [x] Verified authenticated upload, publishing, public readback, mobile layout, admin permissions and Cloudflare-origin requests
