@@ -2,7 +2,7 @@ import { useEventEdition } from "@/hooks/useEventEdition";
 import { editionKey } from "@/lib/eventEdition";
 import { vendorsForEdition } from "@/lib/vendor-edition";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Loader2,
   LogOut,

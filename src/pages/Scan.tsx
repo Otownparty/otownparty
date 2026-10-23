@@ -1,8 +1,8 @@
 import { useEventEdition } from "@/hooks/useEventEdition";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import QrScanner from "qr-scanner";
-import { Loader2, Check, X, AlertTriangle, Camera, LogOut } from "lucide-react";
+import { Loader2, Check, X, AlertTriangle, Camera, LogOut, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 
