@@ -53,9 +53,9 @@ Deno.serve(async req => {
       }
     }
     if (links.some(l => l.status === "failed")) return json({ error: job.error || "A photographer link could not be imported", status: "failed" });
-    const { data: pendingPhotos, error: readError } = await db.from("gallery_photos").select().eq("import_id", job.id).is("storage_path", null).order("position").limit(4);
+    const { data: pendingPhotos, error: readError } = await db.from("gallery_photos").select().eq("import_id", job.id).is("storage_path", null).order("position").limit(24);
     if (readError) throw readError;
-    for (const photo of pendingPhotos ?? []) {
+    const failures = await Promise.all((pendingPhotos ?? []).map(async photo => {
       try {
         const response = await fetch(validatePhotoLink(photo.source_url), { redirect: "manual" });
         if (!response.ok) throw new Error(`Photo download returned ${response.status}`);
@@ -70,11 +70,16 @@ Deno.serve(async req => {
         if (uploadError) throw uploadError;
         const { error } = await db.from("gallery_photos").update({ storage_path: path, error: null }).eq("id", photo.id);
         if (error) throw error;
+        return null;
       } catch (error) {
         await db.from("gallery_photos").update({ error: (error as Error).message }).eq("id", photo.id);
-        await db.from("gallery_imports").update({ status: "failed", error: (error as Error).message }).eq("id", job.id);
-        return json({ error: (error as Error).message, status: "failed" });
+        return (error as Error).message;
       }
+    }));
+    const failed = failures.find(Boolean);
+    if (failed) {
+      await db.from("gallery_imports").update({ status: "failed", error: failed }).eq("id", job.id);
+      return json({ error: failed, status: "failed" });
     }
     const { count, error: countError } = await db.from("gallery_photos").select("id", { count: "exact", head: true }).eq("import_id", job.id).is("storage_path", null);
     if (countError) throw countError;
