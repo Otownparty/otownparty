@@ -1,0 +1,33 @@
+CREATE TABLE public.gallery_imports (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), edition text NOT NULL, edition_num integer NOT NULL, title text NOT NULL, links jsonb NOT NULL, status text NOT NULL DEFAULT 'discovering', error text, created_by uuid NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), published_at timestamptz);
+GRANT SELECT ON public.gallery_imports TO authenticated;
+GRANT ALL ON public.gallery_imports TO service_role;
+ALTER TABLE public.gallery_imports ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Admins read gallery imports" ON public.gallery_imports FOR SELECT TO authenticated USING (public.has_role(auth.uid(),'admin'));
+CREATE TABLE public.gallery_photos (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), import_id uuid NOT NULL REFERENCES public.gallery_imports(id), source_url text NOT NULL, storage_path text, alt text NOT NULL, position integer NOT NULL, error text, UNIQUE(import_id,source_url));
+GRANT SELECT ON public.gallery_photos TO anon, authenticated;
+GRANT ALL ON public.gallery_photos TO service_role;
+ALTER TABLE public.gallery_photos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public published gallery photos" ON public.gallery_photos FOR SELECT TO anon,authenticated USING (EXISTS (SELECT 1 FROM public.gallery_imports g WHERE g.id=import_id AND g.status='published'));
+CREATE POLICY "Admins read staged gallery photos" ON public.gallery_photos FOR SELECT TO authenticated USING (public.has_role(auth.uid(),'admin'));
+GRANT SELECT ON public.gallery_imports TO anon;
+CREATE POLICY "Public published gallery imports" ON public.gallery_imports FOR SELECT TO anon,authenticated USING(status='published');
+CREATE TABLE public.gallery_state (id boolean PRIMARY KEY DEFAULT true, latest_import_id uuid REFERENCES public.gallery_imports(id), updated_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT ON public.gallery_state TO anon,authenticated;
+GRANT ALL ON public.gallery_state TO service_role;
+ALTER TABLE public.gallery_state ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public gallery state" ON public.gallery_state FOR SELECT TO anon,authenticated USING(true);
+CREATE OR REPLACE FUNCTION public.publish_gallery_import(p_id uuid) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE g public.gallery_imports;
+BEGIN
+ IF NOT public.has_role(auth.uid(),'admin') THEN RAISE EXCEPTION 'Admin access required'; END IF;
+ PERFORM pg_advisory_xact_lock(831249);
+ SELECT * INTO g FROM public.gallery_imports WHERE id=p_id FOR UPDATE;
+ IF g.id IS NULL OR g.status NOT IN ('ready','published') THEN RAISE EXCEPTION 'Import is not ready'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.gallery_photos WHERE import_id=p_id) OR EXISTS(SELECT 1 FROM public.gallery_photos WHERE import_id=p_id AND storage_path IS NULL) THEN RAISE EXCEPTION 'All photos must finish importing first'; END IF;
+ IF EXISTS(SELECT 1 FROM public.gallery_state s JOIN public.gallery_imports old ON old.id=s.latest_import_id WHERE old.edition_num > g.edition_num) THEN RAISE EXCEPTION 'An older edition cannot replace the latest gallery'; END IF;
+ UPDATE public.gallery_imports SET status='published',published_at=COALESCE(published_at,now()) WHERE id=p_id;
+ INSERT INTO public.gallery_state(id,latest_import_id) VALUES(true,p_id) ON CONFLICT(id) DO UPDATE SET latest_import_id=p_id,updated_at=now();
+END; $$;
+REVOKE ALL ON FUNCTION public.publish_gallery_import(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.publish_gallery_import(uuid) TO authenticated;
+CREATE POLICY "Public gallery image reads" ON storage.objects FOR SELECT TO anon,authenticated USING(bucket_id='gallery-photos');

@@ -15,6 +15,13 @@ const toEmail = (input: string) => {
 
 const TILES = [
   {
+    key: "gallery",
+    label: "Gallery update",
+    desc: "Photographer links & edition photos",
+    icon: ImagePlus,
+    path: "/staff/gallery",
+  },
+  {
     key: "edition",
     label: "Edition update",
     desc: "Next edition graphic & details",

@@ -35,6 +35,109 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_imports: {
+        Row: {
+          created_at: string
+          created_by: string
+          edition: string
+          edition_num: number
+          error: string | null
+          id: string
+          links: Json
+          published_at: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          edition: string
+          edition_num: number
+          error?: string | null
+          id?: string
+          links: Json
+          published_at?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          edition?: string
+          edition_num?: number
+          error?: string | null
+          id?: string
+          links?: Json
+          published_at?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      gallery_photos: {
+        Row: {
+          alt: string
+          error: string | null
+          id: string
+          import_id: string
+          position: number
+          source_url: string
+          storage_path: string | null
+        }
+        Insert: {
+          alt: string
+          error?: string | null
+          id?: string
+          import_id: string
+          position: number
+          source_url: string
+          storage_path?: string | null
+        }
+        Update: {
+          alt?: string
+          error?: string | null
+          id?: string
+          import_id?: string
+          position?: number
+          source_url?: string
+          storage_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_photos_import_id_fkey"
+            columns: ["import_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_imports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gallery_state: {
+        Row: {
+          id: boolean
+          latest_import_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          latest_import_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          latest_import_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_state_latest_import_id_fkey"
+            columns: ["latest_import_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_imports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_blocks: {
         Row: {
           blocked_id: string
@@ -586,6 +689,7 @@ export type Database = {
         Returns: boolean
       }
       publish_event_edition: { Args: { p_details: Json }; Returns: undefined }
+      publish_gallery_import: { Args: { p_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "scanner"
