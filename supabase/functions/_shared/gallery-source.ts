@@ -25,24 +25,38 @@ async function discoverPixsilos(url: URL): Promise<string[]> {
   if (!photos.length || photos.length < images || media.length < expected) throw new Error(`Could not verify the complete photo collection (${photos.length} of ${expected} accessible). Nothing was published.`);
   return [...new Set(photos)];
 }
+// Pixieset's normal page sits behind a browser check, but its crawler view and photo-list feed are public.
+async function discoverPixieset(url: URL): Promise<string[]> {
+  const key = url.pathname.split("/").filter(Boolean)[0];
+  if (!key || !/^[a-z0-9_-]+$/i.test(key)) throw new Error("Use a Pixieset gallery link like https://name.pixieset.com/gallery/");
+  const page = await fetch(`${url.origin}/${key}/?_escaped_fragment_=`, { redirect: "manual" });
+  if (!page.ok) throw new Error(`Photographer site returned ${page.status}. Check the gallery link is public.`);
+  const html = await page.text();
+  const cookie = (page.headers as Headers & { getSetCookie?: () => string[] }).getSetCookie?.().map(c => c.split(";")[0]).join("; ") ?? "";
+  const cid = html.match(/collectionId'\s*:\s*(\d+)/)?.[1];
+  const expected = Number(html.match(/collectionPhotoCount'\s*:\s*(\d+)/)?.[1] ?? 0);
+  if (!cid) throw new Error("Could not read this Pixieset gallery. Check the link opens the photos page.");
+  const slugs = [...new Set([...(html.match(/allGalleries'\s*:\s*\[(.*?)\]\s*,/s)?.[1] ?? "").matchAll(/slug'\s*:\s*'([^']+)'/g)].map(m => m[1]))];
+  const photos = new Set<string>();
+  for (const gs of slugs.length ? slugs : ["highlights"]) {
+    for (let p = 1; p <= 300; p++) {
+      const res = await fetch(`${url.origin}/client/loadphotos/?cuk=${encodeURIComponent(key)}&cid=${cid}&gs=${encodeURIComponent(gs)}&fk=&page=${p}`, { headers: { "X-Requested-With": "XMLHttpRequest", Accept: "application/json", Cookie: cookie } });
+      if (!res.ok) throw new Error(`Photographer site returned ${res.status} while listing photos.`);
+      const body = await res.json().catch(() => null);
+      if (body?.status !== "success") throw new Error("Could not list this Pixieset gallery's photos. Please try again.");
+      const list = typeof body.content === "string" ? JSON.parse(body.content) : body.content;
+      for (const item of Array.isArray(list) ? list : []) {
+        const path = item?.pathXxlarge || item?.pathXlarge || item?.pathLarge;
+        if (typeof path === "string") photos.add(validatePhotoLink(path.startsWith("//") ? `https:${path}` : path));
+      }
+      if (body.isLastPage || !list?.length) break;
+    }
+  }
+  if (!photos.size || photos.size < expected) throw new Error(`Could not verify the complete photo collection (${photos.size} of ${expected} accessible). Nothing was published.`);
+  return [...photos];
+}
 export async function discoverPhotos(link: string): Promise<string[]> {
   const gallery = new URL(validateGalleryLink(link));
   if (/pixsilos\.com$/.test(gallery.hostname)) return discoverPixsilos(gallery);
-  const response = await fetch(gallery.href, { redirect: "manual", headers: UA });
-  if (!response.ok) throw new Error(`Photographer site returned ${response.status}. Ask the photographer for an unrestricted public gallery link.`);
-  const html = await response.text();
-  if (/<title>\s*Just a moment|cf-chl-|<title>\s*Access Denied/i.test(html)) throw new Error("This photographer site blocks automatic importing. Ask for a public downloadable gallery.");
-  const decoded = html.replace(/\\"/g, '"').replace(/\\\//g, "/").replace(/\\u0026|&amp;/g, "&");
-  const urls = [...decoded.matchAll(/https:\/\/(?:media\.pixsilos\.com|(?:[a-z0-9-]+\.)*pixieset\.com)\/[^\s"'<>\\]+/gi)].map(m => m[0]).filter(url => /\.(?:jpe?g|png|webp)(?:\?|$)/i.test(url));
-  const map = new Map<string, string>();
-  for (const url of urls) {
-    const safe = validatePhotoLink(url);
-    const key = new URL(safe).pathname.replace(/-(?:small|medium|large|xlarge|xxlarge|original)\./i, ".").replace(/\/images\/(?:small|medium|large)\//, "/images/");
-    const old = map.get(key);
-    if (!old || /xlarge|original|\/large\//i.test(safe)) map.set(key, safe);
-  }
-  const totalMatch = decoded.match(/"(?:imageCount|image_count|total_photos|photo_count)"\s*:\s*(\d+)/i);
-  const expected = totalMatch ? Number(totalMatch[1]) : null;
-  if (map.size === 0 || expected === null || map.size < expected) throw new Error(`Could not verify the complete photo collection${expected ? ` (${map.size} of ${expected} accessible)` : ""}. Nothing was published. Ask the photographer for a public link with all photos accessible.`);
-  return [...map.values()];
+  return discoverPixieset(gallery);
 }
