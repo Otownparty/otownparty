@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { z } from "npm:zod@3";
-import { discoverPhotos, validateGalleryLink, validatePhotoLink } from "../_shared/gallery-source.ts";
+import { discoverPhotos, fetchRetry, validateGalleryLink, validatePhotoLink } from "../_shared/gallery-source.ts";
 
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 const schema = z.discriminatedUnion("action", [
@@ -57,10 +57,13 @@ Deno.serve(async req => {
     if (readError) throw readError;
     const failures = await Promise.all((pendingPhotos ?? []).map(async photo => {
       try {
-        const response = await fetch(validatePhotoLink(photo.source_url), { redirect: "manual" });
+        const response = await fetchRetry(validatePhotoLink(photo.source_url), { headers: { Accept: "image/webp,image/jpeg,image/png,*/*" } });
         if (!response.ok) throw new Error(`Photo download returned ${response.status}`);
-        const contentType = response.headers.get("content-type")?.split(";")[0] ?? "";
-        if (!["image/jpeg", "image/png", "image/webp"].includes(contentType)) throw new Error("The photographer returned a non-image file");
+        const head = new Uint8Array(await response.clone().arrayBuffer()).slice(0, 12);
+        const sniff = head[0] === 0xff && head[1] === 0xd8 ? "image/jpeg" : head[0] === 0x89 && head[1] === 0x50 ? "image/png" : head[8] === 0x57 && head[9] === 0x45 ? "image/webp" : "";
+        const declared = response.headers.get("content-type")?.split(";")[0] ?? "";
+        const contentType = ["image/jpeg", "image/png", "image/webp"].includes(declared) ? declared : sniff;
+        if (!contentType) throw new Error("The photographer returned a non-image file");
         if (Number(response.headers.get("content-length")) > 20 * 1024 * 1024) throw new Error("Photo exceeds 20 MB");
         const blob = await response.blob();
         if (blob.size > 20 * 1024 * 1024) throw new Error("Photo exceeds 20 MB");
