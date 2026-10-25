@@ -12,14 +12,15 @@ export function useGalleryPhotos(initial: GalleryPhoto[]) {
         supabase.from("gallery_imports").select("id,edition_num").eq("status", "published"),
       ]);
       if (error || albumError || !alive || !state?.latest_import_id) return;
-      const imported: (GalleryPhoto & { importId: string })[] = [];
+      const editionOf = new Map((albums ?? []).map(a => [a.id, a.edition_num]));
+      const imported: (GalleryPhoto & { editionNum: number })[] = [];
       for (let start = 0; ; start += 1000) {
-        const { data, error: photoError } = await supabase.from("gallery_photos").select("storage_path,alt,import_id,position").in("import_id", (albums ?? []).map(a => a.id)).order("position").range(start, start + 999);
+        const { data, error: photoError } = await supabase.from("gallery_photos").select("storage_path,alt,import_id,position").in("import_id", (albums ?? []).map(a => a.id)).order("import_id").order("position").range(start, start + 999);
         if (photoError || !alive) return;
-        for (const p of data ?? []) if (p.storage_path) imported.push({ src: supabase.storage.from("gallery-photos").getPublicUrl(p.storage_path).data.publicUrl, alt: p.alt, importId: p.import_id, era: "" });
+        for (const p of data ?? []) if (p.storage_path) imported.push({ src: supabase.storage.from("gallery-photos").getPublicUrl(p.storage_path).data.publicUrl, alt: p.alt, editionNum: editionOf.get(p.import_id) ?? 0, era: "" });
         if ((data?.length ?? 0) < 1000) break;
       }
-      if (alive) setPhotos(combineGalleryPhotos(initial, imported, state.latest_import_id, albums?.find(a => a.id === state.latest_import_id)?.edition_num ?? null));
+      if (alive) setPhotos(combineGalleryPhotos(initial, imported, editionOf.get(state.latest_import_id) ?? null));
     };
     void refresh();
     const timer = window.setInterval(() => void refresh(), 30000);
