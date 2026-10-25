@@ -11,10 +11,26 @@ export function validatePhotoLink(value: string) {
   return url.href;
 }
 const UA = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", Accept: "text/html,application/json" };
+const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
+// Photographer sites occasionally rate-limit or hiccup; retry transient failures before giving up.
+export async function fetchRetry(input: string, init: RequestInit = {}, tries = 4): Promise<Response> {
+  let last: Response | Error = new Error("Network error");
+  for (let i = 0; i < tries; i++) {
+    const headers = { ...UA, ...(init.headers as Record<string, string> ?? {}) };
+    try {
+      const res = await fetch(input, { ...init, headers });
+      if (res.ok || ![403, 408, 425, 429, 500, 502, 503, 504, 520, 522, 524].includes(res.status)) return res;
+      await res.body?.cancel(); last = res;
+    } catch (e) { last = e as Error; }
+    await wait(600 * 2 ** i + Math.random() * 400);
+  }
+  if (last instanceof Response) return last;
+  throw last;
+}
 async function discoverPixsilos(url: URL): Promise<string[]> {
   const slug = url.pathname.split("/").filter(Boolean).pop();
   if (!slug || !/^[a-z0-9-]+$/i.test(slug)) throw new Error("Use a Pixsilos gallery link");
-  const res = await fetch(`https://api.pixsilos.com/api/galleries/g/${slug}/images`, { headers: UA });
+  const res = await fetchRetry(`https://api.pixsilos.com/api/galleries/g/${slug}/images`, { headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error(`Photographer site returned ${res.status}. Check the gallery link is public.`);
   const body = await res.json().catch(() => null);
   const media = body?.data?.media;
@@ -29,7 +45,7 @@ async function discoverPixsilos(url: URL): Promise<string[]> {
 async function discoverPixieset(url: URL): Promise<string[]> {
   const key = url.pathname.split("/").filter(Boolean)[0];
   if (!key || !/^[a-z0-9_-]+$/i.test(key)) throw new Error("Use a Pixieset gallery link like https://name.pixieset.com/gallery/");
-  const page = await fetch(`${url.origin}/${key}/?_escaped_fragment_=`, { redirect: "manual" });
+  const page = await fetchRetry(`${url.origin}/${key}/?_escaped_fragment_=`, { headers: { "User-Agent": "Googlebot/2.1 (+http://www.google.com/bot.html)" } });
   if (!page.ok) throw new Error(`Photographer site returned ${page.status}. Check the gallery link is public.`);
   const html = await page.text();
   const cookie = (page.headers as Headers & { getSetCookie?: () => string[] }).getSetCookie?.().map(c => c.split(";")[0]).join("; ") ?? "";
@@ -40,7 +56,7 @@ async function discoverPixieset(url: URL): Promise<string[]> {
   const photos = new Set<string>();
   for (const gs of slugs.length ? slugs : ["highlights"]) {
     for (let p = 1; p <= 300; p++) {
-      const res = await fetch(`${url.origin}/client/loadphotos/?cuk=${encodeURIComponent(key)}&cid=${cid}&gs=${encodeURIComponent(gs)}&fk=&page=${p}`, { headers: { "X-Requested-With": "XMLHttpRequest", Accept: "application/json", Cookie: cookie } });
+      const res = await fetchRetry(`${url.origin}/client/loadphotos/?cuk=${encodeURIComponent(key)}&cid=${cid}&gs=${encodeURIComponent(gs)}&fk=&page=${p}`, { headers: { "X-Requested-With": "XMLHttpRequest", Accept: "application/json", Cookie: cookie } });
       if (!res.ok) throw new Error(`Photographer site returned ${res.status} while listing photos.`);
       const body = await res.json().catch(() => null);
       if (body?.status !== "success") throw new Error("Could not list this Pixieset gallery's photos. Please try again.");
