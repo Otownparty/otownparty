@@ -132,6 +132,8 @@ const Partner = () => {
     }
     setProfile(p);
     setProfileLoading(false);
+    // Automatic Find A Raver invites + new-raver alerts (idempotent, background).
+    db.functions.invoke("raver-outreach", { body: {} }).catch(() => {});
   };
 
   const fnError = async (error: any, data: any) => {

@@ -43,6 +43,13 @@
       "when": 1794496667333,
       "tag": "0005_raver_auto_approve_voice",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794497419629,
+      "tag": "0006_raver_outreach",
+      "breakpoints": true
     }
   ]
 }

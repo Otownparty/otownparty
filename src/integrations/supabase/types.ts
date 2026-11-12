@@ -138,6 +138,21 @@ export type Database = {
           },
         ]
       }
+      partner_alert_state: {
+        Row: {
+          last_alert_at: string
+          user_id: string
+        }
+        Insert: {
+          last_alert_at?: string
+          user_id: string
+        }
+        Update: {
+          last_alert_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       partner_blocks: {
         Row: {
           blocked_id: string
@@ -451,6 +466,36 @@ export type Database = {
           total_amount?: number
           unit_price?: number
           verified_at?: string | null
+        }
+        Relationships: []
+      }
+      raver_email_optouts: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
+      raver_invites_sent: {
+        Row: {
+          email: string
+          sent_at: string
+        }
+        Insert: {
+          email: string
+          sent_at?: string
+        }
+        Update: {
+          email?: string
+          sent_at?: string
         }
         Relationships: []
       }
