@@ -78,7 +78,10 @@ Deno.serve(async (req) => {
     for (const r of tp ?? []) if (r.email) buyers.add(r.email.trim().toLowerCase());
     const { data: inv } = await admin.from("raver_invites_sent").select("email").limit(50000);
     const invited = new Set((inv ?? []).map((r) => r.email));
-    const pending = [...buyers].filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && !invited.has(e) && !optouts.has(e) && !memberEmails.has(e));
+    const body = await req.json().catch(() => ({}));
+    const only = typeof body?.email === "string" ? body.email.trim().toLowerCase() : null;
+    if (only) buyers.add(only);
+    const pending = [...buyers].filter((e) => !only || e === only).filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && !invited.has(e) && !optouts.has(e) && !memberEmails.has(e));
     let invitesSent = 0;
     for (const email of pending.slice(0, INVITE_BATCH)) {
       const { data: claimed } = await admin.from("raver_invites_sent").upsert({ email }, { onConflict: "email", ignoreDuplicates: true }).select("email");
@@ -94,6 +97,7 @@ Deno.serve(async (req) => {
       else await admin.from("raver_invites_sent").delete().eq("email", email);
     }
 
+    if (only) return json({ success: true, invitesSent });
     // ---- 2. New-profile alerts
     const now = Date.now();
     const liveAt = (p: { created_at: string; auto_approve_at: string | null }) => new Date(p.auto_approve_at ?? p.created_at).getTime();

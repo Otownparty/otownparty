@@ -177,6 +177,13 @@ async function issueTicketsAndEmail(opts: {
   }
   console.log("Resend OK for:", cleanEmail);
 
+  // Send the Find A Raver invite alongside the ticket (skipped if already a member/invited/opted out).
+  await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/raver-outreach`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}` },
+    body: JSON.stringify({ email: cleanEmail }),
+  }).catch(() => {});
+
   const { error: claimErr } = await supabase.from("payment_intents").update({
     status: "claimed",
     buyer_name: cleanName,
