@@ -1,4 +1,5 @@
 import { getEvent } from "../_shared/event.ts";
+import { extractReference, normalizeEmail, closeEmails } from "../_shared/resend-lookup.ts";
 // Admin-only: manually re-send ticket QR emails to a buyer, from the same sender used for ticket delivery.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -33,11 +34,14 @@ Deno.serve(async (req) => {
     if (!isAdmin) return json({ error: "Admins only" }, 403);
 
     const body = await req.json().catch(() => ({}));
-    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    const email = typeof body.email === "string" ? normalizeEmail(body.email) : "";
+    const lookupEmail = typeof body.lookupEmail === "string" && body.lookupEmail.trim() ? normalizeEmail(body.lookupEmail) : email;
     const scope = body.scope === "all" ? "all" : "current";
-    const reference = typeof body.reference === "string" ? body.reference.trim() : "";
-    if (reference && (reference.length > 100 || !/^[A-Za-z0-9_.-]+$/.test(reference))) return json({ error: "Enter a valid reference ID" }, 400);
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 255) return json({ error: "Enter a valid email" }, 400);
+    const reference = typeof body.reference === "string" ? extractReference(body.reference) : "";
+    if (reference && (reference.length > 100 || !/^[A-Za-z0-9_.-]+$/.test(reference))) return json({ error: `"${reference.slice(0, 60)}" doesn't look like a reference ID. Paste the code that starts with OTP-.` }, 400);
+    const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && e.length <= 255;
+    if (!emailOk(email)) return json({ error: "Enter a valid email to send to" }, 400);
+    if (!emailOk(lookupEmail)) return json({ error: "Enter a valid email used when paying" }, 400);
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
     if (!resendKey) return json({ error: "Email sending isn't configured" }, 500);
@@ -45,14 +49,14 @@ Deno.serve(async (req) => {
 
     const CURRENT_EDITION = (await getEvent(admin)).edition;
     let tq = admin.from("tickets").select("*").order("ticket_index");
-    tq = reference ? tq.eq("payment_reference", reference) : tq.ilike("buyer_email", email);
+    tq = reference ? tq.ilike("payment_reference", reference) : tq.ilike("buyer_email", lookupEmail);
     if (scope === "current" && !reference) tq = tq.eq("edition", CURRENT_EDITION);
     const { data: tickets, error: tErr } = await tq;
     if (tErr) throw tErr;
 
     // Paid orders where tickets were never created — finish them through the normal claim step.
     let iq = admin.from("payment_intents").select("reference, buyer_name, edition").in("status", ["verified", "claimed"]);
-    iq = reference ? iq.eq("reference", reference) : iq.ilike("buyer_email", email);
+    iq = reference ? iq.ilike("reference", reference) : iq.ilike("buyer_email", lookupEmail);
     if (scope === "current" && !reference) iq = iq.eq("edition", CURRENT_EDITION);
     const { data: intents } = await iq;
     const haveRefs = new Set((tickets ?? []).map((t) => t.payment_reference));
@@ -118,8 +122,21 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (!results.length && reference) return json({ error: "No paid ticket found with this reference ID" }, 404);
-    if (!results.length) return json({ error: scope === "current" ? "No paid tickets found for this email in the current edition" : "No paid tickets found for this email" }, 404);
+    if (!results.length) {
+      // Help staff spot a typo: paid emails close to the one searched.
+      let sq = admin.from("tickets").select("buyer_email, edition, payment_reference");
+      if (scope === "current") sq = sq.eq("edition", CURRENT_EDITION);
+      const { data: all } = await sq.limit(5000);
+      const close = closeEmails(lookupEmail, (all ?? []).map((t) => t.buyer_email));
+      const suggestions = close.map((e) => {
+        const rows = (all ?? []).filter((t) => normalizeEmail(t.buyer_email) === e);
+        return { email: e, tickets: rows.length, reference: rows[0]?.payment_reference, edition: rows[0]?.edition };
+      });
+      const error = reference
+        ? `No paid order found with reference ${reference}`
+        : `No paid tickets found for ${lookupEmail}${scope === "current" ? " in the current edition" : ""}`;
+      return json({ error, suggestions }, 200);
+    }
     return json({ results });
   } catch (e) {
     console.error(e);

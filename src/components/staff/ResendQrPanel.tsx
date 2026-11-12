@@ -7,36 +7,49 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Mail, CheckCircle2, XCircle } from "lucide-react";
 
 type Result = { reference: string; ok: boolean; count: number; error?: string };
-type Entry = { email: string; results?: Result[]; error?: string };
+type Suggestion = { email: string; tickets: number; reference?: string; edition?: string };
+type Entry = { email: string; from?: string; results?: Result[]; error?: string; suggestions?: Suggestion[] };
 
 const ResendQrPanel = () => {
   const [email, setEmail] = useState("");
   const [reference, setReference] = useState("");
+  const [lookupEmail, setLookupEmail] = useState("");
   const [scope, setScope] = useState<"current" | "all">("current");
   const [sending, setSending] = useState(false);
   const [log, setLog] = useState<Entry[]>([]);
 
-  const send = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const emails = email.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
-    if (!emails.length) return toast.error("Enter at least one email");
-    const ref = reference.trim();
-    if (ref && emails.length > 1) return toast.error("Use one email when sending by reference ID");
+  const run = async (emails: string[], ref: string, lookup: string) => {
     setSending(true);
     for (const addr of emails) {
-      const { data, error } = await supabase.functions.invoke("resend-ticket-email", { body: { email: addr, scope, ...(ref ? { reference: ref } : {}) } });
-      let entry: Entry = { email: addr };
+      const body: Record<string, string> = { email: addr, scope };
+      if (ref) body.reference = ref;
+      if (lookup) body.lookupEmail = lookup;
+      const { data, error } = await supabase.functions.invoke("resend-ticket-email", { body });
+      const entry: Entry = { email: addr, from: ref || lookup || undefined };
       if (error) {
         let msg = error.message;
         if (error instanceof FunctionsHttpError) {
           try { msg = (await error.context.json()).error || msg; } catch { /* keep */ }
         }
         entry.error = msg;
+      } else if (data?.error) {
+        entry.error = data.error;
+        entry.suggestions = data.suggestions ?? [];
       } else entry.results = data?.results ?? [];
       setLog((l) => [entry, ...l]);
     }
     setSending(false);
-    setEmail(""); setReference("");
+  };
+
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const emails = email.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+    if (!emails.length) return toast.error("Enter the email to send tickets to");
+    const ref = reference.trim();
+    const lookup = lookupEmail.trim();
+    if ((ref || lookup) && emails.length > 1) return toast.error("Use one email when sending by reference or paying email");
+    await run(emails, ref, lookup);
+    setEmail(""); setReference(""); setLookupEmail("");
   };
 
   return (
@@ -44,8 +57,8 @@ const ResendQrPanel = () => {
       <div>
         <h3 className="font-display text-lg mb-1">Resend Ticket QR Codes</h3>
         <p className="text-sm text-muted-foreground">
-          Type the email a buyer used when paying. Their QR codes are sent again from the same address as normal ticket emails.
-          You can paste several emails separated by commas.
+          Find an order by its reference ID or the email used when paying, and send the same QR codes to any email.
+          If the buyer typed the wrong email, put it in the second box and the correct one in "Send tickets to".
         </p>
       </div>
 
@@ -56,10 +69,16 @@ const ResendQrPanel = () => {
           value={reference}
           onChange={(e) => setReference(e.target.value)}
         />
-        <p className="text-xs text-muted-foreground">With a reference ID, that order's tickets go to the email below — even if it differs from the one used to pay. They are the same QR codes, so each can still be scanned only once.</p>
         <Input
-          aria-label="Email to send to"
-          placeholder="buyer@example.com"
+          aria-label="Email used when paying"
+          placeholder="Email used when paying (optional, e.g. the wrong one)"
+          value={lookupEmail}
+          onChange={(e) => setLookupEmail(e.target.value)}
+        />
+        <p className="text-xs text-muted-foreground">You can paste the reference with extra words like "Reference OTP-…". The same QR codes are sent, so each ticket can still be scanned only once.</p>
+        <Input
+          aria-label="Send tickets to"
+          placeholder="Send tickets to: correct@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -79,9 +98,17 @@ const ResendQrPanel = () => {
         <div className="space-y-2">
           {log.map((entry, i) => (
             <div key={i} className="border border-border rounded-lg bg-card p-3 text-sm">
-              <p className="font-medium mb-1">{entry.email}</p>
+              <p className="font-medium mb-1">To {entry.email}{entry.from && <span className="text-muted-foreground font-normal text-xs"> · found by {entry.from}</span>}</p>
               {entry.error ? (
-                <p className="flex items-center gap-1.5 text-destructive"><XCircle size={14} /> {entry.error}</p>
+                <div className="space-y-2">
+                  <p className="flex items-center gap-1.5 text-destructive"><XCircle size={14} /> {entry.error}</p>
+                  {entry.suggestions?.map((sg) => (
+                    <div key={sg.email} className="flex items-center gap-2 rounded-md border border-border p-2">
+                      <span className="text-xs flex-1">Did you mean <b>{sg.email}</b>? {sg.tickets} ticket{sg.tickets === 1 ? "" : "s"}{sg.edition ? ` · ${sg.edition.replace("Otown Party ", "")}` : ""}</span>
+                      <Button type="button" size="sm" disabled={sending} onClick={() => run([entry.email], "", sg.email)}>Send to {entry.email}</Button>
+                    </div>
+                  ))}
+                </div>
               ) : (
                 entry.results!.map((r) => (
                   <p key={r.reference} className={`flex items-center gap-1.5 ${r.ok ? "text-primary" : "text-destructive"}`}>
