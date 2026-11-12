@@ -3,7 +3,8 @@ import { motion, useAnimation, PanInfo } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
-import { Loader2, X, Heart, Flag } from "lucide-react";
+import { Loader2, X, Heart, Flag, Eye } from "lucide-react";
+import ProfileSheet from "./ProfileSheet";
 import ReportDialog from "./ReportDialog";
 
 const db = supabase as any;
@@ -16,6 +17,7 @@ type Candidate = {
   gender: string;
   bio: string;
   photo_urls: string[];
+  looking_for?: string[];
 };
 
 const SWIPE_THRESHOLD = 120;
@@ -24,6 +26,7 @@ const SwipeDeck = ({ currentUserId }: { currentUserId: string }) => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [reportTarget, setReportTarget] = useState<Candidate | null>(null);
+  const [viewing, setViewing] = useState(false);
   const controls = useAnimation();
 
   useEffect(() => {
@@ -53,8 +56,8 @@ const SwipeDeck = ({ currentUserId }: { currentUserId: string }) => {
 
       const { data, error } = await db
         .from("partner_profiles")
-        .select("id, user_id, display_name, age, gender, bio, photo_urls")
-        .eq("status", "approved")
+        .select("id, user_id, display_name, age, gender, bio, photo_urls, looking_for")
+        .or(`status.eq.approved,and(status.eq.pending,auto_approve_at.lte.${new Date().toISOString()})`)
         .limit(50);
       if (error) throw error;
 
@@ -124,6 +127,17 @@ const SwipeDeck = ({ currentUserId }: { currentUserId: string }) => {
   const top = candidates[0];
   const next = candidates[1];
 
+  const pass = () => {
+    setViewing(false);
+    controls.start({ x: -500, opacity: 0, rotate: -15, transition: { duration: 0.3 } });
+    setTimeout(() => recordSwipe(top, "left"), 150);
+  };
+  const like = () => {
+    setViewing(false);
+    controls.start({ x: 500, opacity: 0, rotate: 15, transition: { duration: 0.3 } });
+    setTimeout(() => recordSwipe(top, "right"), 150);
+  };
+
   return (
     <div className="relative h-[480px] flex items-center justify-center">
       {next && (
@@ -139,11 +153,20 @@ const SwipeDeck = ({ currentUserId }: { currentUserId: string }) => {
         onDragEnd={(e, info) => handleDragEnd(e, info, top)}
         whileDrag={{ scale: 1.02 }}
       >
-        <img
-          src={top.photo_urls[0]}
-          className="w-full h-72 object-cover pointer-events-none"
-          draggable={false}
-        />
+        <div className="relative" onClick={() => setViewing(true)}>
+          <img
+            src={top.photo_urls[0]}
+            className="w-full h-72 object-cover pointer-events-none"
+            draggable={false}
+          />
+          {top.photo_urls.length > 1 && (
+            <div className="absolute top-2 inset-x-3 flex gap-1">
+              {top.photo_urls.map((_, k) => (
+                <span key={k} className={`h-1 flex-1 rounded-full ${k === 0 ? "bg-primary" : "bg-foreground/30"}`} />
+              ))}
+            </div>
+          )}
+        </div>
         <div className="p-4">
           <div className="flex items-center justify-between">
             <h3 className="font-display text-xl">
@@ -156,7 +179,7 @@ const SwipeDeck = ({ currentUserId }: { currentUserId: string }) => {
               <Flag size={16} />
             </button>
           </div>
-          <p className="text-sm text-foreground/60 mt-1">{top.bio}</p>
+          <p className="text-sm text-foreground/60 mt-1 line-clamp-2">{top.bio}</p>
         </div>
       </motion.div>
 
@@ -165,24 +188,31 @@ const SwipeDeck = ({ currentUserId }: { currentUserId: string }) => {
           size="icon"
           variant="outline"
           className="rounded-full w-14 h-14 border-destructive/50 hover:bg-destructive/10"
-          onClick={() => {
-            controls.start({ x: -500, opacity: 0, rotate: -15, transition: { duration: 0.3 } });
-            setTimeout(() => recordSwipe(top, "left"), 150);
-          }}
+          aria-label="Pass"
+          onClick={pass}
         >
           <X className="text-destructive" />
         </Button>
         <Button
           size="icon"
+          variant="outline"
+          aria-label="View full profile"
+          className="rounded-full w-12 h-12 self-center border-primary/40 hover:bg-primary/10"
+          onClick={() => setViewing(true)}
+        >
+          <Eye className="text-primary" size={20} />
+        </Button>
+        <Button
+          size="icon"
           className="rounded-full w-14 h-14 bg-primary hover:brightness-110"
-          onClick={() => {
-            controls.start({ x: 500, opacity: 0, rotate: 15, transition: { duration: 0.3 } });
-            setTimeout(() => recordSwipe(top, "right"), 150);
-          }}
+          aria-label="Like"
+          onClick={like}
         >
           <Heart />
         </Button>
       </div>
+
+      {viewing && <ProfileSheet profile={top} onClose={() => setViewing(false)} onPass={pass} onLike={like} />}
 
       {reportTarget && (
         <ReportDialog

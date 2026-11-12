@@ -29,6 +29,7 @@ type Profile = {
   photo_urls: string[];
   status: Status;
   reject_reason?: string | null;
+  reviewed_at?: string | null;
   created_at: string;
 };
 
@@ -41,8 +42,9 @@ type Report = {
   created_at: string;
 };
 
-const STATUS_FILTERS: { value: Status | "all"; label: string }[] = [
-  { value: "pending", label: "Pending" },
+type Filter = Status | "all" | "review";
+const STATUS_FILTERS: { value: Filter; label: string }[] = [
+  { value: "review", label: "Needs review" },
   { value: "approved", label: "Approved" },
   { value: "rejected", label: "Rejected" },
   { value: "disabled", label: "Disabled" },
@@ -60,7 +62,7 @@ const PartnerAdminPanel = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [reportCounts, setReportCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<Status | "all">("pending");
+  const [filter, setFilter] = useState<Filter>("review");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Profile | null>(null);
   const [selectedReports, setSelectedReports] = useState<Report[]>([]);
@@ -82,8 +84,8 @@ const PartnerAdminPanel = () => {
   };
 
   useEffect(() => {
-    load();
-    sendApprovalEmails();
+    // Flip anyone past their 2-minute wait to approved, then email them.
+    db.rpc("apply_partner_auto_approvals").then(() => { load(); sendApprovalEmails(); });
   }, []);
 
   const load = async () => {
@@ -133,7 +135,9 @@ const PartnerAdminPanel = () => {
   };
 
   const filtered = profiles.filter((p) => {
-    if (filter !== "all" && p.status !== filter) return false;
+    if (filter === "review") {
+      if (p.reviewed_at || p.status === "rejected" || p.status === "disabled") return false;
+    } else if (filter !== "all" && p.status !== filter) return false;
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       if (!p.display_name.toLowerCase().includes(q)) return false;
@@ -141,7 +145,7 @@ const PartnerAdminPanel = () => {
     return true;
   });
 
-  const pendingCount = profiles.filter((p) => p.status === "pending").length;
+  const pendingCount = profiles.filter((p) => !p.reviewed_at && (p.status === "pending" || p.status === "approved")).length;
 
   if (loading) {
     return (
@@ -166,7 +170,7 @@ const PartnerAdminPanel = () => {
               }`}
             >
               {f.label}
-              {f.value === "pending" && pendingCount > 0 && ` (${pendingCount})`}
+              {f.value === "review" && pendingCount > 0 && ` (${pendingCount})`}
             </button>
           ))}
         </div>
@@ -270,9 +274,9 @@ const PartnerAdminPanel = () => {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => updateStatus(selected.id, "rejected", { reject_reason: rejectReason.trim() || null })}
+                      onClick={() => updateStatus(selected.id, "rejected", { reject_reason: rejectReason.trim() || null, reviewed_at: new Date().toISOString() })}
                     >
-                      Confirm reject
+                      Confirm decline
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => setShowRejectBox(false)}>
                       Cancel
@@ -281,14 +285,14 @@ const PartnerAdminPanel = () => {
                 </div>
               ) : (
                 <div className="flex gap-2 flex-wrap">
-                  {selected.status !== "approved" && (
-                    <Button size="sm" onClick={() => updateStatus(selected.id, "approved")}>
-                      <Check size={14} className="mr-1" /> Approve
+                  {(!selected.reviewed_at || selected.status === "rejected") && (
+                    <Button size="sm" onClick={() => updateStatus(selected.id, "approved", { reviewed_at: new Date().toISOString() })}>
+                      <Check size={14} className="mr-1" /> {selected.status === "rejected" ? "Restore" : "Mark reviewed"}
                     </Button>
                   )}
                   {selected.status !== "rejected" && (
                     <Button size="sm" variant="outline" onClick={() => setShowRejectBox(true)}>
-                      <X size={14} className="mr-1" /> Reject
+                      <X size={14} className="mr-1" /> Decline
                     </Button>
                   )}
                   {selected.status !== "disabled" ? (

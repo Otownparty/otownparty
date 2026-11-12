@@ -9,7 +9,7 @@ export type InboxMatch = {
   user_b: string;
   chat_expires_at: string | null;
   created_at: string;
-  other: { user_id: string; display_name: string; age: number; photo_urls: string[]; bio: string } | null;
+  other: { user_id: string; display_name: string; age: number; photo_urls: string[]; bio: string; gender?: string; looking_for?: string[] } | null;
   lastMessage: { content: string; sender_id: string; created_at: string } | null;
   unread: number;
 };
@@ -32,7 +32,7 @@ export function usePartnerInbox(userId: string | undefined, openChatId: string |
     const ids = list.map((m: any) => m.id);
     const otherIds = list.map((m: any) => (m.user_a === userId ? m.user_b : m.user_a));
     const [{ data: profs }, { data: msgs }, { data: reads }] = await Promise.all([
-      db.from("partner_profiles").select("user_id, display_name, age, photo_urls, bio").in("user_id", otherIds),
+      db.from("partner_profiles").select("user_id, display_name, age, photo_urls, bio, gender, looking_for").in("user_id", otherIds),
       db.from("partner_messages").select("match_id, sender_id, content, created_at").in("match_id", ids).order("created_at", { ascending: true }),
       db.from("partner_match_reads").select("match_id, last_read_at").eq("user_id", userId),
     ]);

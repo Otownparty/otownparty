@@ -4,13 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Flag, Minus, Send, Ticket, X, ChevronLeft } from "lucide-react";
+import { Flag, Minus, Send, Ticket, X, ChevronLeft, Mic, Square, Trash2, Loader2 } from "lucide-react";
+import VoiceNote from "./VoiceNote";
+import ProfileSheet from "./ProfileSheet";
 import ReportDialog from "./ReportDialog";
 import type { InboxMatch } from "@/hooks/usePartnerInbox";
 
 const db = supabase as any;
 
-type Message = { id: string; match_id: string; sender_id: string; content: string; created_at: string };
+type Message = { id: string; match_id: string; sender_id: string; content: string; created_at: string; kind?: string; audio_path?: string | null; audio_duration?: number | null };
+
+const MAX_SECS = 60;
 
 const ICEBREAKERS = [
   "Afrobeats or Amapiano? 🎶",
@@ -39,6 +43,14 @@ const ChatPanel = ({
   const [expiresAt, setExpiresAt] = useState<string | null>(match.chat_expires_at);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [showReport, setShowReport] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [recSecs, setRecSecs] = useState(0);
+  const [clip, setClip] = useState<{ blob: Blob; url: string; secs: number } | null>(null);
+  const [sendingVoice, setSendingVoice] = useState(false);
+  const recorder = useRef<MediaRecorder | null>(null);
+  const chunks = useRef<Blob[]>([]);
+  const recStart = useRef(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const otherUserId = match.user_a === currentUserId ? match.user_b : match.user_a;
   const started = !!expiresAt;
@@ -99,6 +111,75 @@ const ChatPanel = ({
     }).catch(() => {});
   };
 
+  useEffect(() => {
+    if (!recording) return;
+    const i = setInterval(() => {
+      const secs = Math.floor((Date.now() - recStart.current) / 1000);
+      setRecSecs(secs);
+      if (secs >= MAX_SECS) stopRecording();
+    }, 250);
+    return () => clearInterval(i);
+  }, [recording]);
+
+  useEffect(() => () => { recorder.current?.stream.getTracks().forEach((t) => t.stop()); }, []);
+
+  const startRecording = async () => {
+    if (expired) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const type = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/aac"].find((t) => MediaRecorder.isTypeSupported?.(t));
+      const r = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+      chunks.current = [];
+      r.ondataavailable = (e) => e.data.size && chunks.current.push(e.data);
+      r.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunks.current, { type: r.mimeType || "audio/webm" });
+        const secs = Math.max(1, Math.round((Date.now() - recStart.current) / 1000));
+        if (blob.size > 0) setClip({ blob, url: URL.createObjectURL(blob), secs: Math.min(secs, MAX_SECS) });
+      };
+      recorder.current = r;
+      recStart.current = Date.now();
+      setRecSecs(0);
+      r.start();
+      setRecording(true);
+    } catch {
+      toast.error("Allow microphone access to send voice notes");
+    }
+  };
+
+  const stopRecording = () => {
+    setRecording(false);
+    if (recorder.current?.state === "recording") recorder.current.stop();
+  };
+
+  const discardClip = () => {
+    if (clip) URL.revokeObjectURL(clip.url);
+    setClip(null);
+  };
+
+  const sendVoice = async () => {
+    if (!clip || expired) return;
+    setSendingVoice(true);
+    try {
+      const ext = clip.blob.type.includes("mp4") || clip.blob.type.includes("aac") ? "m4a" : "webm";
+      const path = `${match.id}/${crypto.randomUUID()}.${ext}`;
+      const up = await supabase.storage.from("partner-voice").upload(path, clip.blob, { contentType: clip.blob.type });
+      if (up.error) throw up.error;
+      const { data, error } = await db.from("partner_messages")
+        .insert({ match_id: match.id, sender_id: currentUserId, content: "🎤 Voice note", kind: "voice", audio_path: path, audio_duration: clip.secs })
+        .select().single();
+      if (error) throw error;
+      setMessages((m) => (m.some((x) => x.id === data.id) ? m : [...m, data]));
+      discardClip();
+      refreshExpiry();
+      supabase.functions.invoke("notify-partner-message", { body: { message_id: data.id, origin: window.location.origin } }).catch(() => {});
+    } catch {
+      toast.error("Voice note didn't send — chat may have ended");
+    } finally {
+      setSendingVoice(false);
+    }
+  };
+
   const banner = started
     ? null
     : theySent && !iSent
@@ -123,8 +204,10 @@ const ChatPanel = ({
     <div className="fixed z-50 inset-0 sm:inset-auto sm:bottom-5 sm:right-5 sm:w-[380px] sm:h-[560px] flex flex-col bg-card sm:border border-border sm:rounded-2xl shadow-2xl animate-fade-up overflow-hidden">
       <div className="flex items-center gap-3 px-3 py-3 border-b border-border">
         <button onClick={onClose} className="sm:hidden text-foreground/60 hover:text-primary" aria-label="Back"><ChevronLeft size={20} /></button>
-        <img src={photo} alt="" className="w-10 h-10 rounded-full object-cover" />
-        <div className="flex-1 min-w-0">
+        <button onClick={() => setShowProfile(true)} aria-label={`View ${name}'s profile`} className="shrink-0">
+          <img src={photo} alt="" className="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-primary" />
+        </button>
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setShowProfile(true)}>
           <p className="font-semibold truncate">{name}{match.other?.age ? `, ${match.other.age}` : ""}</p>
           <p className={`text-xs font-mono ${expired ? "text-destructive" : started && secondsLeft < 3600 ? "text-secondary" : "text-foreground/50"}`}>
             {!started ? "24h chat · starts on reply" : expired ? "Chat ended" : `Chat ends in ${fmt(secondsLeft)}`}
@@ -150,7 +233,9 @@ const ChatPanel = ({
         {messages.map((m) => (
           <div key={m.id} className={`max-w-[78%] px-3 py-2 rounded-2xl text-sm break-words ${
             m.sender_id === currentUserId ? "ml-auto bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm"}`}>
-            {m.content}
+            {m.kind === "voice" && m.audio_path
+              ? <VoiceNote path={m.audio_path} duration={m.audio_duration} mine={m.sender_id === currentUserId} />
+              : m.content}
           </div>
         ))}
         <div ref={bottomRef} />
@@ -173,14 +258,33 @@ const ChatPanel = ({
               ))}
             </div>
           )}
-          <div className="p-3 flex gap-2">
-            <Input placeholder="Say hi..." value={draft} maxLength={500}
-              onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} />
-            <Button size="icon" onClick={() => send()}><Send size={16} /></Button>
-          </div>
+          {recording ? (
+            <div className="p-3 flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-destructive animate-pulse" />
+              <span className="flex-1 text-sm font-mono">Recording {fmt(recSecs)} / 01:00</span>
+              <Button size="icon" variant="outline" aria-label="Stop recording" onClick={stopRecording}><Square size={14} /></Button>
+            </div>
+          ) : clip ? (
+            <div className="p-3 flex items-center gap-2">
+              <Button size="icon" variant="ghost" aria-label="Discard voice note" onClick={discardClip}><Trash2 size={16} /></Button>
+              <audio src={clip.url} controls className="flex-1 h-9 min-w-0" />
+              <Button size="icon" aria-label="Send voice note" onClick={sendVoice} disabled={sendingVoice}>
+                {sendingVoice ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              </Button>
+            </div>
+          ) : (
+            <div className="p-3 flex gap-2">
+              <Input placeholder="Say hi..." value={draft} maxLength={500}
+                onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} />
+              {draft.trim()
+                ? <Button size="icon" aria-label="Send" onClick={() => send()}><Send size={16} /></Button>
+                : <Button size="icon" variant="outline" aria-label="Record voice note" className="border-primary/40 text-primary" onClick={startRecording}><Mic size={16} /></Button>}
+            </div>
+          )}
         </div>
       )}
 
+      {showProfile && match.other && <ProfileSheet profile={match.other as any} onClose={() => setShowProfile(false)} />}
       {showReport && <ReportDialog reportedUserId={otherUserId} currentUserId={currentUserId} onClose={() => setShowReport(false)} />}
     </div>
   );

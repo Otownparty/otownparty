@@ -38,6 +38,7 @@ type PartnerProfile = {
   photo_urls: string[];
   status: ProfileStatus;
   reject_reason?: string | null;
+  auto_approve_at?: string | null;
 };
 
 const GENDERS = ["Male", "Female"];
@@ -108,6 +109,14 @@ const Partner = () => {
     if (session?.user?.id) fetchProfile();
   }, [session?.user?.id]);
 
+  // Pending applicants go live automatically ~2 minutes after submitting.
+  useEffect(() => {
+    if (profile?.status !== "pending") return;
+    const due = profile.auto_approve_at ? new Date(profile.auto_approve_at).getTime() - Date.now() : 120000;
+    const t = setTimeout(() => fetchProfile(), Math.max(3000, due + 1500));
+    return () => clearTimeout(t);
+  }, [profile?.status, profile?.auto_approve_at]);
+
   const fetchProfile = async () => {
     setProfileLoading(true);
     const { data, error } = await db
@@ -116,7 +125,12 @@ const Partner = () => {
       .eq("user_id", session.user.id)
       .maybeSingle();
     if (error) console.error(error);
-    setProfile(data ?? null);
+    let p = data ?? null;
+    if (p?.status === "pending" && p.auto_approve_at && new Date(p.auto_approve_at) <= new Date()) {
+      await db.rpc("apply_partner_auto_approvals");
+      p = { ...p, status: "approved" };
+    }
+    setProfile(p);
     setProfileLoading(false);
   };
 
@@ -478,9 +492,9 @@ const Partner = () => {
 
         {session && !profileLoading && profile?.status === "pending" && (
           <div className="bg-card border border-border rounded-xl p-6 text-center animate-fade-up">
-            <p className="font-display text-lg mb-1">Your profile is under review ⏳</p>
+            <p className="font-display text-lg mb-1">Almost there ⏳</p>
             <p className="text-sm text-foreground/60">
-              We manually check every photo before you go live. Shouldn't take long.
+              You'll be live in about 2 minutes. Keep this page open — it'll switch on by itself.
             </p>
           </div>
         )}

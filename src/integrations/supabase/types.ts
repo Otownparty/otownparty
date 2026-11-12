@@ -232,23 +232,32 @@ export type Database = {
       }
       partner_messages: {
         Row: {
+          audio_duration: number | null
+          audio_path: string | null
           content: string
           created_at: string
           id: string
+          kind: string
           match_id: string
           sender_id: string
         }
         Insert: {
+          audio_duration?: number | null
+          audio_path?: string | null
           content: string
           created_at?: string
           id?: string
+          kind?: string
           match_id: string
           sender_id: string
         }
         Update: {
+          audio_duration?: number | null
+          audio_path?: string | null
           content?: string
           created_at?: string
           id?: string
+          kind?: string
           match_id?: string
           sender_id?: string
         }
@@ -290,6 +299,7 @@ export type Database = {
         Row: {
           age: number | null
           approval_emailed_at: string | null
+          auto_approve_at: string | null
           bio: string | null
           created_at: string
           display_name: string | null
@@ -298,12 +308,14 @@ export type Database = {
           looking_for: string[] | null
           photo_urls: string[] | null
           reject_reason: string | null
+          reviewed_at: string | null
           status: string
           user_id: string
         }
         Insert: {
           age?: number | null
           approval_emailed_at?: string | null
+          auto_approve_at?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
@@ -312,12 +324,14 @@ export type Database = {
           looking_for?: string[] | null
           photo_urls?: string[] | null
           reject_reason?: string | null
+          reviewed_at?: string | null
           status?: string
           user_id: string
         }
         Update: {
           age?: number | null
           approval_emailed_at?: string | null
+          auto_approve_at?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
@@ -326,6 +340,7 @@ export type Database = {
           looking_for?: string[] | null
           photo_urls?: string[] | null
           reject_reason?: string | null
+          reviewed_at?: string | null
           status?: string
           user_id?: string
         }
@@ -681,6 +696,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_partner_auto_approvals: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

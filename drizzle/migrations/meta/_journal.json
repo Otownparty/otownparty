@@ -36,6 +36,13 @@
       "when": 1792786000527,
       "tag": "0004_gallery_import_jobs",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794496667333,
+      "tag": "0005_raver_auto_approve_voice",
+      "breakpoints": true
     }
   ]
 }
