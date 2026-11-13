@@ -50,6 +50,13 @@
       "when": 1794497419629,
       "tag": "0006_raver_outreach",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794574630854,
+      "tag": "0007_ticket_email_retry",
+      "breakpoints": true
     }
   ]
 }

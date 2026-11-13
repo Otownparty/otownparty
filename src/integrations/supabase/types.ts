@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      email_job_state: {
+        Row: {
+          id: string
+          lease_until: string | null
+          paused_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          lease_until?: string | null
+          paused_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          lease_until?: string | null
+          paused_until?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_editions: {
         Row: {
           active: boolean
@@ -421,6 +442,9 @@ export type Database = {
           claimed_at: string | null
           created_at: string
           edition: string
+          email_attempts: number
+          email_error: string | null
+          email_last_attempt_at: string | null
           event_details: Json | null
           id: string
           quantity: number
@@ -439,6 +463,9 @@ export type Database = {
           claimed_at?: string | null
           created_at?: string
           edition?: string
+          email_attempts?: number
+          email_error?: string | null
+          email_last_attempt_at?: string | null
           event_details?: Json | null
           id?: string
           quantity: number
@@ -457,6 +484,9 @@ export type Database = {
           claimed_at?: string | null
           created_at?: string
           edition?: string
+          email_attempts?: number
+          email_error?: string | null
+          email_last_attempt_at?: string | null
           event_details?: Json | null
           id?: string
           quantity?: number

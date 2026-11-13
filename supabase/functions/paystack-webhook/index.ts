@@ -173,6 +173,7 @@ async function issueTicketsAndEmail(opts: {
   if (!resendRes.ok) {
     const errText = await resendRes.text();
     console.error("Resend error for", cleanEmail, resendRes.status, errText);
+    await supabase.from("payment_intents").update({ email_error: `Resend ${resendRes.status}: ${errText}`.slice(0, 300), email_attempts: (intent.email_attempts ?? 0) + 1, email_last_attempt_at: new Date().toISOString() }).eq("reference", reference);
     return { emailSent: false, emailError: `Resend ${resendRes.status}: ${errText}` };
   }
   console.log("Resend OK for:", cleanEmail);
@@ -189,6 +190,7 @@ async function issueTicketsAndEmail(opts: {
     buyer_name: cleanName,
     buyer_email: cleanEmail,
     claimed_at: intent.claimed_at || new Date().toISOString(),
+    email_error: null,
   }).eq("reference", reference);
   if (claimErr) throw claimErr;
   return { emailSent: true };

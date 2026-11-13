@@ -85,7 +85,7 @@ const PartnerAdminPanel = () => {
 
   useEffect(() => {
     // Flip anyone past their 2-minute wait to approved, then email them.
-    db.rpc("apply_partner_auto_approvals").then(() => { load(); sendApprovalEmails(); supabase.functions.invoke("raver-outreach", { body: {} }).catch(() => {}); });
+    db.rpc("apply_partner_auto_approvals").then(() => { load(); sendApprovalEmails(); supabase.functions.invoke("retry-ticket-emails", { body: { action: "sweep" } }).catch(() => {}).finally(() => supabase.functions.invoke("raver-outreach", { body: {} }).catch(() => {})); });
   }, []);
 
   const load = async () => {

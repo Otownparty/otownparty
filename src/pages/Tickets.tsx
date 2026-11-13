@@ -51,6 +51,7 @@ const Tickets = () => {
   const [locks, setLocks] = useState<Record<string, boolean>>({});
   const [banner, setBanner] = useState<{ enabled: boolean; title: string; message: string }>({ enabled: false, title: "", message: "" });
 
+  useEffect(() => { supabase.functions.invoke("retry-ticket-emails", { body: { action: "sweep" } }).catch(() => {}); }, []);
   useEffect(() => {
     const loadConfig = async () => {
       const [{ data: lockRows }, { data: bannerRow }] = await Promise.all([

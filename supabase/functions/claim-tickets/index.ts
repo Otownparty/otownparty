@@ -251,6 +251,7 @@ Deno.serve(async (req) => {
       buyer_name: cleanName,
       buyer_email: cleanEmail,
       claimed_at: intent.claimed_at || new Date().toISOString(),
+      email_error: null,
     }).eq("reference", reference);
     if (claimErr) throw claimErr;
 

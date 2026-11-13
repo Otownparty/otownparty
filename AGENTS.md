@@ -9,3 +9,4 @@
 - Scope vendor records, summaries, exports, clearing and availability to their stored edition; expose public availability only as current-edition aggregate counts to avoid leaking vendor contacts.- Find A Raver applicants go live via a derived 2-minute auto_approve_at window (RLS + swipe query), persisted to approved by apply_partner_auto_approvals on applicant/staff visits; staff review is tracked separately in reviewed_at, so approval never waits for a person or a cron job.
 
 - Find A Raver outreach (buyer invites + new-raver alerts) runs in one idempotent, batched function triggered by Partner/staff page visits, with signed opt-out links, so no cron is needed.
+- Ticket email delivery is tracked on payment_intents (claimed only after the provider accepts); retry-ticket-emails retries undelivered orders on page visits with a lease and limit pause, and marketing outreach yields to it so tickets are never starved.

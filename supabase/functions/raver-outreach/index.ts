@@ -11,7 +11,7 @@ const corsHeaders = {
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 const SITE = "https://otownparty.com";
-const INVITE_BATCH = 20, ALERT_BATCH = 20, ALERT_GAP_MS = 12 * 3600 * 1000;
+const DAILY_OUTREACH_CAP = 40, INVITE_BATCH = 20, ALERT_BATCH = 20, ALERT_GAP_MS = 12 * 3600 * 1000;
 
 async function sign(email: string) {
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(Deno.env.get("QR_SIGNING_SECRET")! + ":optout"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -47,6 +47,16 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Ticket emails always come first: stop marketing while tickets wait for delivery or the email limit is hit.
+    const { data: jobState } = await admin.from("email_job_state").select("paused_until").eq("id", "tickets").maybeSingle();
+    if (jobState?.paused_until && jobState.paused_until > new Date().toISOString()) return json({ skipped: "email limit reached" });
+    const { count: waitingTickets } = await admin.from("payment_intents").select("reference", { count: "exact", head: true }).eq("status", "verified").not("email_error", "is", null);
+    if (waitingTickets) return json({ skipped: "ticket emails waiting" });
+    const dayAgo = new Date(Date.now() - 86400000).toISOString();
+    const { count: invToday } = await admin.from("raver_invites_sent").select("email", { count: "exact", head: true }).gte("sent_at", dayAgo);
+    const { count: alertsToday } = await admin.from("partner_alert_state").select("user_id", { count: "exact", head: true }).gte("last_alert_at", dayAgo);
+    const outreachFull = (invToday ?? 0) + (alertsToday ?? 0) >= DAILY_OUTREACH_CAP;
+    let limited = false;
     const resendKey = Deno.env.get("RESEND_API_KEY")!;
     const ticketFrom = Deno.env.get("RESEND_FROM_EMAIL") || "";
     const m = ticketFrom.match(/@([^<>\s]+?)>?\s*$/);
@@ -54,6 +64,10 @@ Deno.serve(async (req) => {
     const send = async (to: string, subject: string, html: string) => {
       const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [to], subject, html }) });
       if (!r.ok) console.error("Resend", to, r.status, await r.text());
+      if (r.status === 429) {
+        limited = true;
+        await admin.from("email_job_state").upsert({ id: "tickets", paused_until: new Date(Date.now() + 3600000).toISOString(), updated_at: new Date().toISOString() });
+      }
       await new Promise((res) => setTimeout(res, 550));
       return r.ok;
     };
@@ -83,7 +97,8 @@ Deno.serve(async (req) => {
     if (only) buyers.add(only);
     const pending = [...buyers].filter((e) => !only || e === only).filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && !invited.has(e) && !optouts.has(e) && !memberEmails.has(e));
     let invitesSent = 0;
-    for (const email of pending.slice(0, INVITE_BATCH)) {
+    for (const email of pending.slice(0, only ? 1 : outreachFull ? 0 : INVITE_BATCH)) {
+      if (limited) break;
       const { data: claimed } = await admin.from("raver_invites_sent").upsert({ email }, { onConflict: "email", ignoreDuplicates: true }).select("email");
       if (!claimed?.length) continue;
       const html = shell(`
@@ -113,7 +128,7 @@ Deno.serve(async (req) => {
     }
     let alertsSent = 0;
     for (const me of approved) {
-      if (alertsSent >= ALERT_BATCH) break;
+      if (alertsSent >= ALERT_BATCH || limited || outreachFull) break;
       const email = userEmails.get(me.user_id);
       if (!email || optouts.has(email)) continue;
       const prev = lastAlert.get(me.user_id) ?? 0;

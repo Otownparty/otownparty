@@ -29,6 +29,7 @@ import { toast } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TicketLockPanel from "@/components/staff/TicketLockPanel";
 import ResendQrPanel from "@/components/staff/ResendQrPanel";
+import UndeliveredTicketsPanel from "@/components/staff/UndeliveredTicketsPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1201,6 +1202,7 @@ Let's Rave!
             </TabsContent>
 
             <TabsContent value="resend">
+              <UndeliveredTicketsPanel />
               <ResendQrPanel />
             </TabsContent>
           </Tabs>
